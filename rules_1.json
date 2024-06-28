@@ -1,0 +1,15 @@
+[
+  {
+    "id" : 1,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "resourceTypes": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"],
+      "excludedInitiatorDomains": [""],
+      "excludedRequestDomains": [""],
+      "domains": ["*://*/*"]
+    }
+  }
+]

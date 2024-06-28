@@ -1,0 +1,1 @@
+!function(){var i,o={"js-doNotTrack":navigator.doNotTrack,"js-globalPrivacyControl":navigator.globalPrivacyControl};for(i in o)void 0===o[i]?o[i]="<i>undefined</i>":""==o[i]?o[i]="<i>empty</i>":null==o[i]&&(o[i]="<i>null</i>"),_id(i).innerHTML=o[i]}();

@@ -1,0 +1,39 @@
+{
+    "manifest_version": 3,
+    "name": "web clearing",
+    "permissions": [
+      "storage",
+      "tabs",
+      "contentSettings",
+      "webRequest",
+      "declarativeNetRequestWithHostAccess"
+    ],
+    "host_permissions": [
+      "http://*/*",
+      "https://*/*"
+    ],
+    "description": "Helping you get rid of trackers. This tool was developed by security experts after a deep research. This tools is ready to block the most trend and sofisticated trackers.",
+    "version": "1",
+    "action": {
+      "default_popup": "action/main.html",
+      "default_icon": "images/web_clearing.png"
+    },
+    "background": {
+      "service_worker": "background/service-worker.js",
+      "type": "module"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"],
+        "js": ["contentScripts/main.js"],
+        "world": "MAIN",
+        "run_at": "document_start",
+        "all_frames": true
+      }
+    ],  
+    "externally_connectable": {
+      "matches": ["<all_urls>"],
+      "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"]
+    }
+  }

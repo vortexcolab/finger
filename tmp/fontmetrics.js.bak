@@ -1,0 +1,58 @@
+// este script basicamente testa todas as fontes contra a fonte default
+var fonts = ["TimesNewRomanCYR","ArialCYR","Vietnam","Bwviet","Soviet","SovietExpanded","SovietBold","Russian","GujaratiMT","DevanagariMT","ArialHebrew","CorsivaHebrew","Baghdad","STFangsong"];
+var metrics = ["monospace", "sans-serif", "serif"];
+function test() {
+
+    var body_elem = document.getElementsByTagName("body")[0];
+    var div_elem = document.createElement("div");
+    div_elem.setAttribute("id", "inauth_font_detector");
+    div_elem.setAttribute("style", "visibility: hidden;position: absolute; top: 0px; left: -999px;");
+    body_elem.appendChild(div_elem);
+
+    var span_elem = document.createElement("span");
+    span_elem.style.fontSize = "72px";
+    span_elem.innerHTML = "mmmmmmmmmmlli";
+
+    var m_width = {};
+    var m_height = {};
+    for (i in metrics) {
+        span_elem.style.fontFamily = metrics[i];
+        div_elem.appendChild(span_elem);
+        m_width[metrics[i]] = span_elem.offsetWidth;
+        m_height[metrics[i]] = span_elem.offsetHeight;
+        div_elem.removeChild(span_elem);
+    }
+  
+    var div2_elem = document.createElement("div");
+    div2_elem.setAttribute("style", "visibility: hidden;position: absolute; top: 0px; left: -999px;");
+    for (var spans = [], bools_arr = [], initTime = performance.now(), i = 0; i < fonts.length && !(performance.now() - initTime > 995); i++) {
+        var span_arr = [];
+        bools_arr.push(false);
+        for (i in metrics) {
+            var div = document.createElement("div");
+            var span = document.createElement("span");
+            span.style.fontSize = "72px";
+            span.innerHTML = "mmmmmmmmmmlli";
+            span.style.fontFamily = fonts[i] + "," + metrics[i];
+            div.appendChild(span);
+            div2_elem.appendChild(div);
+            span_arr.push(span);
+        }
+        spans.push(span_arr);
+    }
+    div_elem.appendChild(div2_elem);
+    for (i = 0; i < fonts.length; i++) {
+        if (spans.length < i)
+            bools_arr.push(false);
+        else for (v in  span_arr = spans[i], metrics) {
+            var span = span_arr[v];
+            var uneq = (span.offsetWidth != m_width[metrics[v]]) || (span.offsetHeight != m_height[metrics[v]]);
+
+            bools_arr[i] = bools_arr[i] || uneq;
+        }
+    }
+    div_elem.removeChild(div2_elem);
+    return bools_arr;
+}
+
+var arr = test();
