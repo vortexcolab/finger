@@ -43,11 +43,16 @@ FINGER é uma ferramenta desenvolvida como uma extensão para o navegador Google
 
 1. Clone o repositório:
     ```bash
-    git clone https://gitlab.com/usuario/projeto-finger.git
+    git clone https://gitlab.engine.capgemini.com/software-engineering/portugal/internal/vortexcolab/browser_plugin.git
     ```
-2. Navegue até o diretório do projeto:
+2. Mude de branch:
     ```bash
-    cd projeto-finger
+    git checkout development
+    ```
+
+3. Navegue até o diretório do projeto:
+    ```bash
+    cd browser_plugin
     ```
 3. Carregue a extensão no Google Chrome:
     - Abra `chrome://extensions/`.
@@ -64,4 +69,5 @@ FINGER é uma ferramenta desenvolvida como uma extensão para o navegador Google
 
 ## Licença
 
+vortexcolab
 
