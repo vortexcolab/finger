@@ -1,42 +1,42 @@
-# FINGER - Web Browser Privacy Monitoring Tool
+# FINGER - Fingerprint Interception and Notification for Guarding User Rights
 
-FINGER é uma ferramenta desenvolvida como uma extensão para o navegador Google Chrome com o objetivo de monitorar e proteger a privacidade dos usuários na web. Ela detecta atividades de fingerprinting, um método utilizado para rastrear os usuários através de características únicas do navegador e do sistema, e permite ao usuário gerenciar e bloquear esses rastreadores em tempo real.
+FINGER é uma ferramenta desenvolvida como uma extensão para o navegador Google Chrome, com o objetivo de monitorizar e proteger a privacidade dos utilizadores na web. A extensão deteta atividades de fingerprinting, uma técnica utilizada para rastrear os utilizadores através de características únicas do navegador e do sistema, permitindo ao utilizador gerir e bloquear esses rastreadores em tempo real.
 
 ## Funcionalidades
 
-- **Interceptação de scripts**: A extensão insere scripts (content scripts) que interceptam e monitoram métodos JavaScript para detectar fingerprinting.
-- **Detecção de fingerprinting**: Monitora diversas técnicas de fingerprinting, incluindo:
+- **Intercetação de scripts**: A extensão insere scripts (content scripts) que intercetam e monitorizam métodos JavaScript para detetar fingerprinting.
+- **Deteção de fingerprinting**: Monitoriza várias técnicas de fingerprinting, incluindo:
   - Canvas API
   - Font Metrics
-  - Plugin Enumeration
+  - Enumeração de Plugins
   - Audio Context
   - Battery Status API
-  - Cache-Based Fingerprinting
-  - Detecção de propriedades de hardware e navegador.
-- **Alertas ao usuário**: Quando uma tentativa de fingerprinting é detectada, a extensão notifica o usuário via uma interface popup.
-- **Bloqueio dinâmico**: A extensão permite ao usuário bloquear tentativas de rastreamento por redirecionamento através de regras dinâmicas.
+  - Fingerprinting baseado em Cache
+  - Deteção de propriedades de hardware e do navegador.
+- **Alertas ao utilizador**: Quando uma tentativa de fingerprinting é detetada, a extensão notifica o utilizador através de uma interface popup.
+- **Bloqueio dinâmico**: A extensão permite ao utilizador bloquear tentativas de rastreamento por redirecionamento através de regras dinâmicas.
 
 ## Arquitetura e Fluxo de Trabalho
 
-1. Ao carregar uma página, o arquivo `main.js` é injetado e intercepta potenciais atividades de fingerprinting, modificando métodos JavaScript e propriedades de objetos.
-2. Eventos de fingerprinting detectados são registrados e enviados ao script de plano de fundo (`service-worker.js`).
-3. O script de plano de fundo processa os eventos e pode atualizar o estado da extensão ou notificar o usuário através de um popup.
-4. O usuário pode interagir com o popup para ver detalhes sobre tentativas de fingerprinting e configurar o comportamento da extensão.
+1. Quando uma página web é carregada, o ficheiro `main.js` é injetado e interceta potenciais atividades de fingerprinting, modificando métodos JavaScript e propriedades de objetos.
+2. Eventos de fingerprinting detetados são registados e enviados para o script de plano de fundo (`service-worker.js`).
+3. O script de plano de fundo processa os eventos e pode atualizar o estado da extensão ou notificar o utilizador através de um popup.
+4. O utilizador pode interagir com o popup para ver detalhes sobre tentativas de fingerprinting e configurar o comportamento da extensão.
 
 ![Diagrama de Arquitetura](path/to/diagram.png)
 
-## Estrutura de Arquivos
+## Estrutura de Ficheiros
 
-- **manifest.json**: Arquivo de configuração principal da extensão que define permissões, scripts a serem injetados, e outros metadados.
-- **main.js**: Script de conteúdo que intercepta tentativas de fingerprinting em páginas web.
-- **popup.html**: Interface da extensão que mostra informações ao usuário sobre eventos de fingerprinting detectados.
-- **popup.js**: Script que gerencia as interações e exibe as informações no popup.
-- **service-worker.js**: Gerencia processos de fundo, incluindo a sincronização de estado, bloqueio dinâmico de rastreamento, e monitoramento de redirecionamentos maliciosos.
+- **manifest.json**: Ficheiro de configuração principal da extensão que define permissões, scripts a serem injetados e outros metadados.
+- **main.js**: Script de conteúdo que interceta tentativas de fingerprinting em páginas web.
+- **popup.html**: Interface da extensão que apresenta informações ao utilizador sobre eventos de fingerprinting detetados.
+- **popup.js**: Script que gere as interações e exibe as informações no popup.
+- **service-worker.js**: Gere processos em segundo plano, incluindo a sincronização do estado, bloqueio dinâmico de rastreamento e monitorização de redirecionamentos maliciosos.
 
 ## Tecnologias Utilizadas
 
-- **Google Chrome Extensions API**: Utilizada para injetar scripts e manipular as permissões necessárias.
-- **JavaScript**: Para interceptar, monitorar e modificar o comportamento de scripts de fingerprinting.
+- **API de Extensões do Google Chrome**: Utilizada para injetar scripts e gerir as permissões necessárias.
+- **JavaScript**: Para intercetar, monitorizar e modificar o comportamento de scripts de fingerprinting.
 - **HTML/CSS**: Para a interface gráfica do popup.
   
 ## Instalação
@@ -64,4 +64,4 @@ FINGER é uma ferramenta desenvolvida como uma extensão para o navegador Google
 
 ## Licença
 
-«
+
