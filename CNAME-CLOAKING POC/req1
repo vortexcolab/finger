@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!DOCTYPE items [
+<!ELEMENT items (item*)>
+<!ATTLIST items burpVersion CDATA "">
+<!ATTLIST items exportTime CDATA "">
+<!ELEMENT item (time, url, host, port, protocol, method, path, extension, request, status, responselength, mimetype, response, comment)>
+<!ELEMENT time (#PCDATA)>
+<!ELEMENT url (#PCDATA)>
+<!ELEMENT host (#PCDATA)>
+<!ATTLIST host ip CDATA "">
+<!ELEMENT port (#PCDATA)>
+<!ELEMENT protocol (#PCDATA)>
+<!ELEMENT method (#PCDATA)>
+<!ELEMENT path (#PCDATA)>
+<!ELEMENT extension (#PCDATA)>
+<!ELEMENT request (#PCDATA)>
+<!ATTLIST request base64 (true|false) "false">
+<!ELEMENT status (#PCDATA)>
+<!ELEMENT responselength (#PCDATA)>
+<!ELEMENT mimetype (#PCDATA)>
+<!ELEMENT response (#PCDATA)>
+<!ATTLIST response base64 (true|false) "false">
+<!ELEMENT comment (#PCDATA)>
+]>
+<items burpVersion="2024.5.5" exportTime="Fri Aug 16 13:26:22 WEST 2024">
+  <item>
+    <time>Fri Aug 16 13:25:30 WEST 2024</time>
+    <url><![CDATA[https://pagead2.googlesyndication.com/pagead/gen_204?id=plmetrics&cls=0.004&mls=0.004&nls=1&cas=0.000&nas=0&was=0.000&wls=0.004&tls=4071.000&lcp=276&lcps=163076&cbt=1962&mbt=1173&nlt=9&nif=0&ifi=0&eid=31083339%2C31083344%2C31086034%2C31086203%2C31086224%2C95332149%2C31079525%2C21065725&top=1&pvsid=1252849165967305&gpt=1&inp=240]]></url>
+    <host ip="142.250.200.98">pagead2.googlesyndication.com</host>
+    <port>443</port>
+    <protocol>https</protocol>
+    <method><![CDATA[GET]]></method>
+    <path><![CDATA[/pagead/gen_204?id=plmetrics&cls=0.004&mls=0.004&nls=1&cas=0.000&nas=0&was=0.000&wls=0.004&tls=4071.000&lcp=276&lcps=163076&cbt=1962&mbt=1173&nlt=9&nif=0&ifi=0&eid=31083339%2C31083344%2C31086034%2C31086203%2C31086224%2C95332149%2C31079525%2C21065725&top=1&pvsid=1252849165967305&gpt=1&inp=240]]></path>
+    <extension>null</extension>
+    <request base64="true"><![CDATA[R0VUIC9wYWdlYWQvZ2VuXzIwND9pZD1wbG1ldHJpY3MmY2xzPTAuMDA0Jm1scz0wLjAwNCZubHM9MSZjYXM9MC4wMDAmbmFzPTAmd2FzPTAuMDAwJndscz0wLjAwNCZ0bHM9NDA3MS4wMDAmbGNwPTI3NiZsY3BzPTE2MzA3NiZjYnQ9MTk2MiZtYnQ9MTE3MyZubHQ9OSZuaWY9MCZpZmk9MCZlaWQ9MzEwODMzMzklMkMzMTA4MzM0NCUyQzMxMDg2MDM0JTJDMzEwODYyMDMlMkMzMTA4NjIyNCUyQzk1MzMyMTQ5JTJDMzEwNzk1MjUlMkMyMTA2NTcyNSZ0b3A9MSZwdnNpZD0xMjUyODQ5MTY1OTY3MzA1JmdwdD0xJmlucD0yNDAgSFRUUC8xLjENCkhvc3Q6IHBhZ2VhZDIuZ29vZ2xlc3luZGljYXRpb24uY29tDQpTZWMtQ2gtVWE6ICJOb3QpQTtCcmFuZCI7dj0iOTkiLCAiR29vZ2xlIENocm9tZSI7dj0iMTI3IiwgIkNocm9taXVtIjt2PSIxMjciDQpTZWMtQ2gtVWEtTW9iaWxlOiA/MA0KVXNlci1BZ2VudDogTW96aWxsYS81LjAgKE1hY2ludG9zaDsgSW50ZWwgTWFjIE9TIFggMTBfMTVfNykgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEyNy4wLjAuMCBTYWZhcmkvNTM3LjM2DQpTZWMtQ2gtVWEtUGxhdGZvcm06ICJtYWNPUyINCkFjY2VwdDogKi8qDQpYLUNsaWVudC1EYXRhOiBDSmUyeVFFSXBiYkpBUWlwbmNvQkNJcUp5d0VJazZITEFRaUdvTTBCQ05mOHpRRUlnS2pPQVJpUHpzMEINClNlYy1GZXRjaC1TaXRlOiBjcm9zcy1zaXRlDQpTZWMtRmV0Y2gtTW9kZTogbm8tY29ycw0KU2VjLUZldGNoLURlc3Q6IGVtcHR5DQpSZWZlcmVyOiBodHRwczovL3d3dy5wdWJsaWNvLnB0Lw0KQWNjZXB0LUVuY29kaW5nOiBnemlwLCBkZWZsYXRlLCBicg0KQWNjZXB0LUxhbmd1YWdlOiBwdC1QVCxwdDtxPTAuOSxlbi1VUztxPTAuOCxlbjtxPTAuNw0KUHJpb3JpdHk6IHU9MSwgaQ0KQ29ubmVjdGlvbjoga2VlcC1hbGl2ZQ0KDQo=]]></request>
+    <status></status>
+    <responselength></responselength>
+    <mimetype></mimetype>
+    <response base64="true"></response>
+    <comment></comment>
+  </item>
+</items>

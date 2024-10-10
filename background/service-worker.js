@@ -1,5 +1,5 @@
 // Global variables
-var activeTab, signal = true, signal2 = true;
+var activeTab, signal = true, signal2 = true, rule = true;
 
 const types = [
   'cookies',
@@ -38,11 +38,12 @@ function mainObj() {
   this.screen = {width: false, height: false};
   this.timezone = false;
   this.hardwareConcurrency = false;
-  this.pluginEnumeration = {window: {onmessage: false, fetch: false}, performance: { getEntriesByType: false }};
+  this.pluginEnumeration = {window: {onmessage: false, fetch: 0}, performance: { getEntriesByType: false }};
   this.cache = {performance: {now: false}, typedArrayConstructors: false};
   this.animation = {window: {requestAnimationFrame: false}};
-  this.fontEnumeration = {top: 0, left: 0, position: 0, textContent: 0, fontFamily: 0};
-  this.battery = {charging: false, chargingTime: false, dischargingTime: false, level: false, navigator: {getBattery: false}}
+  this.fontEnumeration = {top: 0, left: 0, position: 0, textContent: 0, fontFamily: 0, canvasmeasureText: 0, canvasfont: 0};
+  this.battery = {charging: false, chargingTime: false, dischargingTime: false, level: false, navigator: {getBattery: false}};
+  this.maxTouchPoints = {present: false}
 }
 
 function parseNested(str) {
@@ -63,12 +64,28 @@ function waitForSignal() {
       if (signal && signal2) {
         signal = false;
         signal2 = false;
+        console.log(signal, signal2);
         resolve();
       } else {
-        setTimeout(checkSignal, 10); // Check again after 100 milliseconds
+        setTimeout(checkSignal, 30); // Check again after 100 milliseconds
       }
     };
     checkSignal();
+  });
+}
+
+function waitForRule() {
+  return new Promise(resolve => {
+    const checkRule = () => {
+      if (rule) {
+        rule = false;
+        console.log(rule);
+        resolve();
+      } else {
+        setTimeout(checkRule, 30); // Check again after 100 milliseconds
+      }
+    };
+    checkRule();
   });
 }
 
@@ -92,15 +109,20 @@ function setObj(obj, popup = true){
       chrome.action.setPopup(
         {popup: "action/main.html"}
       )
-      chrome.runtime.sendMessage({ action: "action_reload" }, response => {
+      // Send a message to the background or service worker
+      chrome.runtime.sendMessage({ action: "action_reload" }, (response) => {
         if (chrome.runtime.lastError) {
           console.log("Error:", chrome.runtime.lastError.message);
-          chrome.action.openPopup();
+          // Optionally, handle specific error cases
+          if (chrome.runtime.lastError.message === "No SW") {
+            console.error("Service worker is not available.");
+            // Consider retrying or notifying the user
+          }
+          //chrome.action.openPopup(); // Opening popup as an alternative action  HERE https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/User_actions
         } else if (!response) {
           console.log("action_reload got no response!");
-          chrome.action.openPopup();
+          //chrome.action.openPopup();
         } else {
-          // Log the response received from the action script
           console.log("Response from action script (popup):", response);
         }
       });
@@ -114,6 +136,8 @@ function setObj(obj, popup = true){
     WEB REQUESTS
 
 */
+
+
 chrome.webRequest.onBeforeRequest.addListener(
   async function(details) {
     const { url } = details;
@@ -147,7 +171,7 @@ chrome.webRequest.onBeforeRequest.addListener(
         )
         chrome.runtime.sendMessage({ action: "is_alive?" }, response => {
           if (chrome.runtime.lastError) {
-            console.error("Error:", chrome.runtime.lastError.message);
+            console.log("Error:", chrome.runtime.lastError.message);
             chrome.action.openPopup();
           } else if (!response) {
             chrome.action.openPopup();
@@ -158,27 +182,55 @@ chrome.webRequest.onBeforeRequest.addListener(
             } else if (!response) {
               console.log("cname_attempt got no response!");
             } else if (response.block) {
-              chrome.declarativeNetRequest.getDynamicRules(rules => {
-                let maxId = 1;
-                if (rules && rules.length > 0) {
-                  for (const rule of rules) {
-                    if (rule.id > maxId) {
-                      maxId = rule.id + 1;
+              waitForRule().then(function () {
+                chrome.declarativeNetRequest.getDynamicRules(rules => { 
+                  let maxId = 1;
+                  console.log((rules));
+                    for (const rule of rules) {
+                      console.log(rule);
+                      if (rule.id >= maxId) {
+                        maxId = rule.id + 1;
+                      }
                     }
-                  }
-                }
-                // add a dynamic rule
-                chrome.declarativeNetRequest.updateDynamicRules({
-                  addRules: [{
-                    id: maxId,
-                    priority: 1,
-                    action: { type: 'block' },
-                    condition: {
-                      excludedRequestDomains: [cnameTarget]
+                  // add a dynamic rule
+                  chrome.declarativeNetRequest.updateDynamicRules({
+                    addRules: [{
+                      id: maxId,
+                      priority: 1,
+                      action: { type: 'block' },
+                      condition: {
+                        excludedRequestDomains: [cnameTarget],
+                        resourceTypes: ["main_frame"]
+                      }
+                    }]
+                  }, () => {rule= true;console.log(`I update a dynamic rule!, ${hostname}: ${cnameTarget} `)});
+                });
+              });
+            } else if (!response.block) {
+              waitForRule().then(function () {
+                chrome.declarativeNetRequest.getDynamicRules(rules => { 
+                  let maxId = 1;
+                  console.log(JSON.stringify(rules));
+                    for (const rule of rules) {
+                      console.log(rule);
+                      if (rule.id >= maxId) {
+                        maxId = rule.id + 1;
+                      }
                     }
-                  }]
-                }, () => {console.log(`I update a dynamic rule!, ${hostname}: ${cnameTarget} `)});
-              });          
+                  // add a dynamic rule
+                  chrome.declarativeNetRequest.updateDynamicRules({
+                    addRules: [{
+                      id: maxId,
+                      priority: 1,
+                      action: { type: 'allowAllRequests' },
+                      condition: {
+                        excludedRequestDomains: [cnameTarget],
+                        resourceTypes: ["main_frame"]
+                      }
+                    }]
+                  }, () => {rule= true;console.log(`I update a dynamic rule!, ${hostname}: ${cnameTarget} `)});
+                });
+              });
             }
             else {
               return;
@@ -423,7 +475,7 @@ function pluginEnumeration_ActionHandler(url, data) {
     if (data == 'window.onmessage') {
       tmp_obj.pluginEnumeration.window.onmessage = true;
     } else if (data == 'window.fetch') {
-      tmp_obj.pluginEnumeration.window.fetch = true;
+      tmp_obj.pluginEnumeration.window.fetch = tmp_obj.pluginEnumeration.window.fetch + 1;
     } else if (data == 'performance.getEntriesByType') {
       tmp_obj.pluginEnumeration.performance.getEntriesByType = true;
     }
@@ -485,6 +537,8 @@ function fontEnumeration_ActionHandler(url, data) {
     else if (data == 'textContent') tmp_obj.fontEnumeration.textContent++;
     else if (data == 'position') tmp_obj.fontEnumeration.position++;
     else if (data == 'left') tmp_obj.fontEnumeration.left++;
+    else if (data == 'canvasContext.measureText') tmp_obj.fontEnumeration.canvasmeasureText++;
+    else if (data == 'canvasContext.font') tmp_obj.fontEnumeration.canvasfont++;
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
@@ -495,12 +549,29 @@ function fontEnumeration_ActionHandler(url, data) {
   });
 }
 
+function maxTouchPoints_ActionHandler(url, data) {
+  chrome.storage.local.get([url]).then((result) => {
+    signal = true;
+    let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
+    
+    if (data == '1') 
+      tmp_obj.maxTouchPoints.present = true;
+
+    const obj = {};
+    obj[url] = JSON.stringify(tmp_obj);
+
+    console.log('obj maxtouchpoints fp ', parseNested(obj[url]));
+
+    setObj(obj);      // obj set
+  });
+}
+
 function battery_ActionHandler(url, data) {
   chrome.storage.local.get([url]).then((result) => {
     signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
     
-    if (data == 'charging') 
+    if (data == '1') 
       tmp_obj.battery.charging = true;
     else if (data == 'chargingTime') 
         tmp_obj.battery.chargingTime = true;
@@ -544,7 +615,7 @@ chrome.runtime.onMessageExternal.addListener(                 // Listen for mess
               microphone_ActionHandler(sender.url, request.data);
           });
         break;
-        case 'fontMetrics':
+        case 'font-metrics':
           waitForSignal().then(() => {
               fontMetrics_ActionHandler(sender.url, request.data);
           });
@@ -599,6 +670,11 @@ chrome.runtime.onMessageExternal.addListener(                 // Listen for mess
               battery_ActionHandler(sender.url, request.data);
           });
         break;
+        case 'maxTouchPoints':
+          waitForSignal().then(() => {
+              maxTouchPoints_ActionHandler(sender.url, request.data);
+          });
+        break;
       }
       sendResponse({success: true});
     } catch (error) {
@@ -621,8 +697,12 @@ chrome.tabs.onActivated.addListener(
               return new Promise((resolve, reject) => {
                 if (chrome.contentSettings[type]) {
                   chrome.contentSettings[type].get({ primaryUrl: tab.url }, function(details) {
-                    tmp_obj.permissions[type] = details.setting;
-                    resolve();
+                    if (typeof details === "undefined") {
+                      resolve();
+                    } else {
+                      tmp_obj.permissions[type] = details.setting;
+                      resolve();
+                    }
                   });
                 } else {
                   resolve();
@@ -648,17 +728,76 @@ chrome.runtime.onInstalled.addListener(function() {
   chrome.storage.local.clear();
 
 });
-/*
-chrome.tabs.onRemoved.addListener(function() {
-  (info) => {
 
-  console.log("sdff");
-  chrome.tabs.get(info.tabId, function (tab) {
-    // clear local storage
-    console.log(tab.url);
-    chrome.storage.local.remove(tab.url).then((result) => {  console.log("REMOVED") });
+// Listen for tab refreshes
+chrome.webNavigation.onCommitted.addListener(function(details) {
+
+  chrome.tabs.get(details.tabId, function (tab) {
+    console.log("tab url: ", tab.url);
+    if (!tab.url.startsWith('http')) {
+            console.log("RIGHT HERE");
+      return;
+    } else {
+      if (details.transitionType === 'reload') {
+        console.log('Tab refreshed:', details.tabId);
+        // Perform any action you need here
+        waitForSignal().then(() => {
+          chrome.tabs.get(details.tabId, function (tab) {
+            // clear local storage
+            console.log(tab.url);
+            chrome.storage.local.remove(tab.url).then((result) => {  signal = true, signal2 = true; console.log("REMOVED") });
+        });
+    
+        });
+      }
+    }
   });
-  }
+
+
 });
 
-*/
+// Listen for tab closures
+chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+  console.log('Tab closed:', tabId);
+  chrome.tabs.get(tabId, function (tab) {
+    console.log("tab url: ", tab.url);
+    if (!tab.url.startsWith('http'))
+      return;
+    else {
+      waitForSignal().then(() => {
+        chrome.tabs.get(tabId, function (tab) {
+          // clear local storage
+          console.log(tab.url);
+          chrome.storage.local.remove(tab.url).then((result) => {  signal = true, signal2 = true; console.log("REMOVED") });
+        });
+      });
+    }
+  });
+
+
+});
+
+// Listen for tab closures
+chrome.tabs.onReplaced.addListener(function(tabId, removeInfo) {
+  console.log('Tab replaced:', tabId);
+  chrome.tabs.get(tabId, function (tab) {
+    console.log("tab url: ", tab.url);
+    if (!tab.url.startsWith('http'))
+      return;
+    else {
+      waitForSignal().then(() => {
+        chrome.tabs.get(tabId, function (tab) {
+          // clear local storage
+          console.log(tab.url);
+          chrome.storage.local.remove(tab.url).then((result) => { signal = true, signal2 = true; console.log("REMOVED") });
+        });
+      });
+    }
+  });
+
+});
+
+
+
+
+

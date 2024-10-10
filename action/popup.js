@@ -36,6 +36,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("Message received in action script (popup):", message);
   
   if (message.action == 'action_reload') {
+    sendResponse({success: true});
     window.location.reload();
   } else if (message.action == 'is_alive?') {
     sendResponse({success: true});
@@ -123,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Font Metrics
         let elem3 = document.querySelector("#fontMetrics .result");
         // Rating = SUM(FontFamily, OffSetWidth, OffSetHeight)
-        let rating = Object.values(contentSettingsObj.fontMetrics).reduce((total, currentValue) => total + currentValue, 0);
+        let rating = Object.values(contentSettingsObj.fontMetrics).reduce((total, currentValue) => Number.isInteger(currentValue) ? total + currentValue : total, 0);
         if (rating < 5 ) {
           elem3.innerHTML= "safe";
           elem3.style.backgroundColor = "Green";
@@ -156,10 +157,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Audio Fingerprint
         let elem5 = document.querySelector("#audioFingerprint .result");
-        if (contentSettingsObj.audioctx.audioContext && contentSettingsObj.audioctx.createOscillator && contentSettingsObj.audioctx.startRendering && contentSettingsObj.audioctx.destination && contentSettingsObj.audioctx.createDynamicsCompressor) {
+        if (contentSettingsObj.audioctx.audioContext && contentSettingsObj.audioctx.startRendering && 
+          contentSettingsObj.audioctx.createOscillator && contentSettingsObj.audioctx.createDynamicsCompressor
+           && contentSettingsObj.audioctx.oscillator.type && contentSettingsObj.audioctx.oscillator.frequency.value
+           && ontentSettingsObj.destination) {
           elem5.innerHTML= "very high";
           elem5.style.backgroundColor = "DarkRed";
-        } else if (contentSettingsObj.audioctx.audioContext || contentSettingsObj.audioctx.createOscillator || contentSettingsObj.audioctx.startRendering || contentSettingsObj.audioctx.destination || contentSettingsObj.audioctx.createDynamicsCompressor) {
+        } else if (contentSettingsObj.audioctx.audioContext && contentSettingsObj.audioctx.startRendering && 
+        (contentSettingsObj.audioctx.createOscillator || contentSettingsObj.audioctx.createDynamicsCompressor)
+        && (contentSettingsObj.audioctx.oscillator.type || contentSettingsObj.audioctx.oscillator.frequency.value)
+        && contentSettingsObj.audioctx.destination) {
+          elem5.innerHTML= "high";
+          elem5.style.backgroundColor = "DarkOrange";         
+        } else if (contentSettingsObj.audioctx.audioContext && contentSettingsObj.audioctx.startRendering) {
           elem5.innerHTML= "medium";
           elem5.style.backgroundColor = "Cornsilk";
         } else {
@@ -204,23 +214,27 @@ document.addEventListener('DOMContentLoaded', function () {
         let elem9 = document.querySelector("#pluginEnumerationFingerprint .result");
         let rating2 = 0;
 
-        if (contentSettingsObj.pluginEnumeration.window.onMessage)  rating2++;
-        if (contentSettingsObj.pluginEnumeration.window.fetch)  rating2++;
+        if (contentSettingsObj.pluginEnumeration.window.onmessage)  rating2++;
+        if (contentSettingsObj.pluginEnumeration.window.fetch > 0)  rating2++;
         if (contentSettingsObj.pluginEnumeration.performance.getEntriesByType) rating2++;
 
-        if ( rating2 == 3 ) {
+        if (contentSettingsObj.pluginEnumeration.window.fetch > 100 || rating2 == 3) {
           elem9.innerHTML= "very high";
           elem9.style.backgroundColor = "DarkRed";
-        } else if ( rating2 == 2 ) {
+        } else if (contentSettingsObj.pluginEnumeration.window.fetch > 50 || contentSettingsObj.pluginEnumeration.performance.getEntriesByType) {
           elem9.innerHTML= "high";
           elem9.style.backgroundColor = "DarkOrange";
-        } else if ( rating2 == 1 ) {
+        } else if (contentSettingsObj.pluginEnumeration.window.fetch > 30 || rating2 == 2) {
           elem9.innerHTML= "medium";
           elem9.style.backgroundColor = "Cornsilk";
-        } else if ( rating2 == 0 ) {
+        } else if (rating2 == 1) {
           elem9.innerHTML= "low";
           elem9.style.backgroundColor = "Azure";
+        } else if ( rating2 == 0 ) {
+          elem9.innerHTML= "safe";
+          elem9.style.backgroundColor = "Green";
         }
+
 
         // Cache Fingerprint
         let elem10 = document.querySelector("#cacheFingerprint .result");
@@ -250,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Font Enumeration Fingerprint
         let elem12 = document.querySelector("#fontEnumerationFingerprint .result");
         // Rating = SUM(FontFamily, OffSetWidth, OffSetHeight)
-        let rating3 = Object.values(contentSettingsObj.fontEnumeration).reduce((total, currentValue) => total + currentValue, 0);
+        let rating3 = Object.values(contentSettingsObj.fontEnumeration).reduce((total, currentValue) => Number.isInteger(currentValue) ? total + currentValue : total, 0);
 
         if (rating3 == 0) {
           elem12.innerHTML= "safe";
@@ -289,8 +303,19 @@ document.addEventListener('DOMContentLoaded', function () {
           elem13.style.backgroundColor = "Green";
         }
 
+        // maxTouchPoints Fingerprint
+        let elem14 = document.querySelector("#maxTouchPointsFingerprint .result");
+
+        if (contentSettingsObj.maxTouchPoints.present) {
+          elem14.innerHTML= "very high";
+          elem14.style.backgroundColor = "DarkRed";
+        } else {
+          elem14.innerHTML= "safe";
+          elem14.style.backgroundColor = "Green";
+        }
 
       } else {
+        console.log("Empty");
         var b = true;
         if (b) {
           document.body.innerHTML = "<h1 style='min-width: 200px;min-height:100px;'>Nothing have been loaded yet ...   &#x23f3;</h1>";
@@ -308,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
             b = true;
           }
           window.location.reload();
-        }, 1000);
+        }, 5000);
       }
 
   

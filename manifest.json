@@ -1,12 +1,13 @@
 {
     "manifest_version": 3,
-    "name": "web clearing",
+    "name": "Web Live Monitor by Vortex-Colab",
     "permissions": [
       "storage",
       "tabs",
       "contentSettings",
       "webRequest",
-      "declarativeNetRequestWithHostAccess"
+      "declarativeNetRequestWithHostAccess",
+      "webNavigation"
     ],
     "host_permissions": [
       "http://*/*",
