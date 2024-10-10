@@ -23,7 +23,7 @@ FINGER é uma ferramenta desenvolvida como uma extensão para o navegador Google
 3. O script de plano de fundo processa os eventos e pode atualizar o estado da extensão ou notificar o utilizador através de um popup.
 4. O utilizador pode interagir com o popup para ver detalhes sobre tentativas de fingerprinting e configurar o comportamento da extensão.
 
-![Diagrama de Arquitetura](images/implm2.pdf)
+![Diagrama de Arquitetura](images/implm2-1.pdf)
 
 ## Estrutura de Ficheiros
 
