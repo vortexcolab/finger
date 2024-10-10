@@ -1,8 +1,9 @@
 console.log("Entraste no main.js ");
 // The ID of the extension we want to talk to.
-const extensionId = "fpdehdgbbjkkpiikjdoophphbfhofpnf";
+const extensionId = "ikmmgeeobocffhlighopbganadpmmeee";
 
 let videoTrack, audioTrack, trackAudioProxy, trackVideoProxy;
+
 
 // Create a function to dispatch custom events
 function dispatchEnabledChangeEvent(track, enabled) {
@@ -116,7 +117,7 @@ function interceptUserMedia() {
   };    
 }
 
-function interceptFontMetrics() {
+function interceptFontMetrics_AND_FontEnumeration() {
 
   /*
     FONT METRICS
@@ -158,8 +159,21 @@ function interceptFontMetrics() {
     Object.defineProperty(obj, property, {
       get: function() {
         console.log(`${property} intercepted for element:`, this);
-        chrome.runtime.sendMessage(extensionId, { action: 'font-metrics', data: property });
-        return originalDescriptor.get.apply(this);
+        if (['offsetWidth', 'offsetHeight'].includes(property)) {
+          chrome.runtime.sendMessage(extensionId, { action: 'font-enumeration', data: property });
+          chrome.runtime.sendMessage(extensionId, { action: 'font-metrics', data: property });
+          return originalDescriptor.get.apply(this);
+        } else if (!['textContent'].includes(property)) {
+          console.log("PROPERTY", property)
+          chrome.runtime.sendMessage(extensionId, { action: 'font-metrics', data: property });
+          return originalDescriptor.get.apply(this);
+        }
+      },
+      set: function(newValue) {
+        if (['textContent'].includes(property)) {
+          chrome.runtime.sendMessage(extensionId, { action: 'font-enumeration', data: property });
+          return originalDescriptor.set.apply(this, [newValue]);
+        }
       },
       configurable: true,
       enumerable: true
@@ -167,10 +181,87 @@ function interceptFontMetrics() {
   }
 
   // Intercept offsetWidth, offsetHeight, scrollWidth, scrollHeight
-  interceptPropertyAccess(Element.prototype, 'offsetWidth');
-  interceptPropertyAccess(Element.prototype, 'offsetHeight');
-  interceptPropertyAccess(Element.prototype, 'scrollWidth');
-  interceptPropertyAccess(Element.prototype, 'scrollHeight');
+  interceptPropertyAccess(HTMLElement.prototype, 'offsetWidth');
+  interceptPropertyAccess(HTMLElement.prototype, 'offsetHeight');
+  interceptPropertyAccess(HTMLElement.prototype, 'scrollWidth');
+  interceptPropertyAccess(HTMLElement.prototype, 'scrollHeight');
+  interceptPropertyAccess(Node.prototype, 'textContent');
+
+  /*
+
+    Font Enumeration
+    # based on: https://github.com/fingerprintjs/fingerprintjs/blob/master/src/sources/fonts.ts#L123
+
+    Detect more than 10 hits in the follow procedure
+
+    HTMLElement.style.position
+    HTMLElement.style.top
+    HTMLElement.style.left
+    HTMLElement.style.fontFamily
+    HTMLElement.style.textContent
+
+  */
+
+  // Override the style attribute setter to intercept direct style changes
+  (function() {
+    // Save the original style descriptor
+    const originalDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'style');
+  
+    // Create a proxy handler for the style object
+    const styleProxyHandler = {
+      get(target, prop, receiver) {
+        console.log(`Accessing style.${prop}`);
+        if (['position', 'top', 'left', 'fontFamily'].includes(prop))
+          chrome.runtime.sendMessage(extensionId, { action: 'font-enumeration', data: prop });
+        return Reflect.get(target, prop, receiver);
+      },
+      set(target, prop, value, receiver) {
+        console.log(`Setting style.${prop} to ${value}`);
+        if (['position', 'top', 'left', 'fontFamily'].includes(prop))
+          chrome.runtime.sendMessage(extensionId, { action: 'font-enumeration', data: prop });
+        return Reflect.set(target, prop, value, receiver);
+      }
+    };
+  
+    // Define a new style property with a proxy on HTMLElement's prototype
+    Object.defineProperty(HTMLElement.prototype, 'style', {
+      get() {
+        return new Proxy(originalDescriptor.get.call(this), styleProxyHandler);
+      },
+      configurable: true,
+      enumerable: true
+    });
+  })();
+  
+  // Canvas font enumeration
+  // Intercept the 'font' property
+  const originalFontDescriptor = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'font');
+  
+  Object.defineProperty(CanvasRenderingContext2D.prototype, 'font', {
+    get() {
+      console.log('Accessing CanvasRenderingContext2D.font');
+      chrome.runtime.sendMessage(extensionId, { action: 'font-enumeration', data: 'canvasContext.font' });
+      return originalFontDescriptor.get.call(this);
+    },
+    set(value) {
+      console.log('Setting CanvasRenderingContext2D.font to', value);
+      chrome.runtime.sendMessage(extensionId, { action: 'font-enumeration', data: 'canvasContext.font' });
+      originalFontDescriptor.set.call(this, value);
+    },
+    configurable: true,
+    enumerable: true
+  });
+
+  // Intercept the 'measureText' method
+  const originalMeasureText = CanvasRenderingContext2D.prototype.measureText;
+
+  CanvasRenderingContext2D.prototype.measureText = function(...args) {
+    console.log('Calling CanvasRenderingContext2D.measureText with arguments:', args);
+    chrome.runtime.sendMessage(extensionId, { action: 'font-enumeration', data: 'canvasContext.measureText' });
+    const result = originalMeasureText.apply(this, args);
+    console.log('measureText result:', result);
+    return result;
+  };
   
 }
 
@@ -269,6 +360,7 @@ function interceptAudioFingerprint() {
 
   // Salva uma referência ao construtor original de AudioContext
   const OriginalAudioContext = window.AudioContext || window.webkitAudioContext;
+  
   // Substitui o construtor AudioContext
   window.AudioContext = function() {
     // Cria uma nova instância do AudioContext
@@ -278,23 +370,48 @@ function interceptAudioFingerprint() {
     // Retorna a nova instância do AudioContext
     return audioContext;
   };
+  
+  // Save the original OfflineAudioContext constructor
+  const OriginalOfflineAudioContext = window.OfflineAudioContext;
 
-  // Salva uma referência ao construtor original de OfflineAudioContext
-  const OriginalOfflineAudioContext = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-  // Substitui o construtor OfflineAudioContext
+  // Override the OfflineAudioContext constructor
   window.OfflineAudioContext = function(numberOfChannels, length, sampleRate) {
-    // Cria uma nova instância do OfflineAudioContext
+    // Create a new instance of the original OfflineAudioContext
     const offlineAudioContext = new OriginalOfflineAudioContext(numberOfChannels, length, sampleRate);
-    // Log do uso do OfflineAudioContext
-    console.log('OfflineAudioContext foi criado');
-    // send message
+    
+    // Log the creation of OfflineAudioContext
+    console.log('OfflineAudioContext was created');
     chrome.runtime.sendMessage(extensionId, { action: 'audioctx', data: 'window.OfflineAudioContext' });
-    // Retorna a nova instância do OfflineAudioContext
+
+    // Intercept the startRendering method of the new instance
+    const originalStartRendering = offlineAudioContext.startRendering;
+    offlineAudioContext.startRendering = function(...args) {
+      console.log('Intercepted startRendering call');
+      console.log('Arguments:', args);
+
+      // Optionally send a message or log
+      chrome.runtime.sendMessage(extensionId, { action: 'audioctx', data: 'AudioContext.startRendering' });
+
+      // Call the original method and handle the promise
+      const result = originalStartRendering.apply(this, args);
+      return result
+        .then(res => {
+          console.log('Rendering completed successfully');
+          return res;
+        })
+        .catch(err => {
+          console.error('Rendering failed:', err);
+          throw err;
+        });
+    };
+
+    // Return the new instance
     return offlineAudioContext;
   };
 
   // Save a reference to the original createOscillator method
   const originalCreateOscillator = BaseAudioContext.prototype.createOscillator;
+
   // Override the createOscillator method
   BaseAudioContext.prototype.createOscillator = function() {
     // Log the usage of createOscillator
@@ -305,36 +422,38 @@ function interceptAudioFingerprint() {
     return originalCreateOscillator.apply(this, arguments);
   };
 
-// Salvar uma referência aos métodos getter originais
-const originalTypeGetter = Object.getOwnPropertyDescriptor(OscillatorNode.prototype, 'type').get;
-const originalFrequencyGetter = Object.getOwnPropertyDescriptor(AudioParam.prototype, 'value').get;
+  // Salvar uma referência aos métodos getter originais
+  const originalTypeSetter = Object.getOwnPropertyDescriptor(OscillatorNode.prototype, 'type').set;
+  const originalFrequencySetter = Object.getOwnPropertyDescriptor(AudioParam.prototype, 'value').set;
 
-// Substituir o método getter para oscillatorNodeObject.type
-Object.defineProperty(OscillatorNode.prototype, 'type', {
-  get: function() {
-    // Registrar o acesso a oscillatorNodeObject.type
-    console.log('Acesso a oscillatorNodeObject.type interceptado');
-    // Enviar mensagem
-    chrome.runtime.sendMessage(extensionId, { action: 'audioctx', data: 'oscillatorNodeObject.type' });
-    // Retornar o valor original
-    return originalTypeGetter.call(this);
-  }
-});
+  // Substituir o método getter para oscillatorNodeObject.type
+  Object.defineProperty(OscillatorNode.prototype, 'type', {
+    set: function(newValue) {
+      // Registrar o acesso a oscillatorNodeObject.type
+      console.log('Acesso a oscillatorNodeObject.type interceptado');
+      // Enviar mensagem
+      chrome.runtime.sendMessage(extensionId, { action: 'audioctx', data: 'oscillatorNodeObject.type' });
+      // Retornar o valor original
+      return originalTypeSetter.call(this, newValue);
+    }
+  });
 
-// Substituir o método getter para oscillatorNodeObject.frequency.value
-Object.defineProperty(AudioParam.prototype, 'value', {
-  get: function() {
-    // Registrar o acesso a oscillatorNodeObject.frequency.value
-    console.log('Acesso a oscillatorNodeObject.frequency.value interceptado');
-    // Enviar mensagem
-    chrome.runtime.sendMessage(extensionId, { action: 'audioctx', data: 'oscillatorNodeObject.frequency.value' });
-    // Retornar o valor original
-    return originalFrequencyGetter.call(this);
-  }
-});
+  // Substituir o método getter para oscillatorNodeObject.frequency.value
+  Object.defineProperty(AudioParam.prototype, 'value', {
+    set: function(newValue) {
+      // Registrar o acesso a oscillatorNodeObject.frequency.value
+      console.log('Acesso a oscillatorNodeObject.frequency.value interceptado');
+      // Enviar mensagem
+      chrome.runtime.sendMessage(extensionId, { action: 'audioctx', data: 'oscillatorNodeObject.frequency.value' });
+      // Retornar o valor original
+      return originalFrequencySetter.call(this, newValue);
+    }
+  });
+
 
   // Save a reference to the original createDynamicsCompressor method
   const originalCreateDynamicsCompressor = AudioContext.prototype.createDynamicsCompressor;
+
   // Override the createDynamicsCompressor method
   AudioContext.prototype.createDynamicsCompressor = function() {
     // Log the creation of a DynamicsCompressorNode object
@@ -347,6 +466,7 @@ Object.defineProperty(AudioParam.prototype, 'value', {
 
   // Save a reference to the original constructor of DynamicsCompressorNode
   const OriginalDynamicsCompressorNode = window.DynamicsCompressorNode;
+
   // Override the constructor of DynamicsCompressorNode
   window.DynamicsCompressorNode = function() {
     // Create a new instance of DynamicsCompressorNode
@@ -424,7 +544,6 @@ Object.defineProperty(AudioParam.prototype, 'value', {
 
   // Save a reference to the original connect method
   const originalConnect = OscillatorNode.prototype.connect;
-
   // Override the connect method
   OscillatorNode.prototype.connect = function(destination, output, input) {
     // Log the usage of connect
@@ -435,8 +554,10 @@ Object.defineProperty(AudioParam.prototype, 'value', {
     return originalConnect.call(this, destination, output, input);
   };
 
+
   // Save a reference to the original connect method
   const originalDynamicsCompressorConnect = DynamicsCompressorNode.prototype.connect;
+
   // Override the connect method
   DynamicsCompressorNode.prototype.connect = function(destination, output, input) {
     // Log the usage of connect
@@ -448,22 +569,22 @@ Object.defineProperty(AudioParam.prototype, 'value', {
   };
 
   // Save the original destination property
-  const originalDestination = AudioContext.prototype.destination;
-  // Override the destination property with a custom one
-  Object.defineProperty(AudioContext.prototype, 'destination', {
+  const originalDestinationSetter = Object.getOwnPropertyDescriptor(BaseAudioContext.prototype, 'destination');
+
+  Object.defineProperty(BaseAudioContext.prototype, 'destination', {
     get: function() {
       // Log the access to destination
       console.log('Access to AudioContext.destination intercepted');
       // Send message
       chrome.runtime.sendMessage(extensionId, { action: 'audioctx', data: 'AudioContext.destination' });
       // Return the original destination
-      return originalDestination;
+      return originalDestinationSetter.get.call(this);
     }
   });
 
+  // Override the destination property with a custom one
   // Save a reference to the original start method of OscillatorNode
   const originalStart = OscillatorNode.prototype.start;
-  // Override the start method of OscillatorNode
   OscillatorNode.prototype.start = function() {
     // Log the usage of start
     console.log('OscillatorNode.start() was called');
@@ -473,21 +594,10 @@ Object.defineProperty(AudioParam.prototype, 'value', {
     return originalStart.apply(this, arguments);
   };
 
-  // Save a reference to the original startRendering method of AudioContext
-  const originalStartRendering = AudioContext.prototype.startRendering;
-  // Override the startRendering method of AudioContext
-  AudioContext.prototype.startRendering = function() {
-    // Log the usage of startRendering
-    console.log('AudioContext.startRendering() was called');
-    // send message
-    chrome.runtime.sendMessage(extensionId, { action: 'audioctx', data: 'AudioContext.startRendering' });
-    // Call the original method with the provided arguments
-    return originalStartRendering.apply(this, arguments);
-  };
 
   // Save a reference to the original oncomplete method of AudioContext
   const originalOnComplete = AudioContext.prototype.oncomplete;
-
+  // Override the start method of OscillatorNode
   // Override the oncomplete method of AudioContext
   AudioContext.prototype.oncomplete = function() {
     // Log the usage of oncomplete
@@ -496,19 +606,6 @@ Object.defineProperty(AudioParam.prototype, 'value', {
     chrome.runtime.sendMessage(extensionId, { action: 'audioctx', data: 'AudioContext.oncomplete()' });
     // Call the original method with the provided arguments
     return originalOnComplete.apply(this, arguments);
-  };
-
-  // Step 1: Save a reference to the original startRendering method
-  const originalOfflineStartRendering = OfflineAudioContext.prototype.startRendering;
-
-  // Step 2: Create a wrapper function
-  OfflineAudioContext.prototype.startRendering = function() {
-    // Your custom code here
-    console.log('startRendering intercepted');
-    // send message
-    chrome.runtime.sendMessage(extensionId, { action: 'audioctx', data: 'AudioContext.startRendering' });
-    // Call the original startRendering method
-    return originalOfflineStartRendering.apply(this, arguments);
   };
 
 }
@@ -631,10 +728,16 @@ function interceptPluginEnumerationFingerprint() {
   // Step 2: Override the fetch method
   window.fetch = function(input, init) {
       // Convert input to a URL object for easier manipulation
-      const url = typeof input === 'string' ? new URL(input) : input instanceof Request ? new URL(input.url) : input;
+      let url;
+      console.log(input);
+      if (input[0] === '/')
+         url = typeof input === 'string' ? new URL(document.location.origin + input) : input instanceof Request ? new URL(input.url) : input;
+      else
+         url = typeof input === 'string' ? new URL(input) : input instanceof Request ? new URL(input.url) : input;
 
+        console.log(url.protocol)
       // Check if the URL starts with 'chrome://'
-      if (url.protocol === 'chrome:') {
+      if (url.protocol === 'chrome:' || url.protocol === 'chrome-extension:') {
           console.log('Intercepted fetch for chrome:// protocol:', url.href);
           chrome.runtime.sendMessage(extensionId, { action: 'plugin-enumeration', data: "window.fetch" });
       }
@@ -777,81 +880,6 @@ function interceptAnimationFingerprint() {
   };
 }
 
-function interceptFontEnumerationFingerprint() {
-  /*
-
-    Font Enumeration
-    # based on: https://github.com/fingerprintjs/fingerprintjs/blob/master/src/sources/fonts.ts#L123
-
-    Detect more than 10 hits in the follow procedure
-
-    HTMLElement.style.position
-    HTMLElement.style.top
-    HTMLElement.style.left
-    HTMLElement.style.fontFamily
-    HTMLElement.style.textContent
-
-  */
-  // Save the original setProperty method
-  const originalSetProperty = CSSStyleDeclaration.prototype.setProperty;
-
-  // Override the setProperty method
-  CSSStyleDeclaration.prototype.setProperty = function(property, value, priority) {
-    // Log the change to the CSS property
-    console.log(`Change to ${property} intercepted:`, value);
-
-    // Send a message for specific properties if needed
-    const propertiesToTrack = ['position', 'top', 'left', 'fontFamily'];
-    if (propertiesToTrack.includes(property)) {
-      chrome.runtime.sendMessage(extensionId, { action: 'font-enumeration', data: property });
-    }
-
-    // Call the original setProperty method
-    originalSetProperty.call(this, property, value, priority);
-  };
-
-  // Override the style attribute setter to intercept direct style changes
-  const originalStyleDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'style') || {};
-
-  Object.defineProperty(Element.prototype, 'style', {
-    set: function(newStyle) {
-      // Log the style change
-      console.log(`Style attribute set:`, newStyle);
-
-      // If the newStyle is an object, intercept its properties
-      if (newStyle instanceof CSSStyleDeclaration) {
-        const propertiesToTrack = ['position', 'top', 'left', 'fontFamily'];
-        propertiesToTrack.forEach(property => {
-          let originalValue = newStyle[property];
-          Object.defineProperty(newStyle, property, {
-            set: function(value) {
-              console.log(`Change to ${property} intercepted:`, value);
-              chrome.runtime.sendMessage(extensionId, { action: 'font-enumeration', data: property });
-              originalValue = value;
-            },
-            get: function() {
-              return originalValue;
-            },
-            enumerable: true,
-            configurable: true
-          });
-        });
-      }
-
-      // Call the original setter if it exists
-      if (originalStyleDescriptor.set) {
-        originalStyleDescriptor.set.call(this, newStyle);
-      }
-    },
-    get: function() {
-      // Call the original getter if it exists
-      return originalStyleDescriptor.get ? originalStyleDescriptor.get.call(this) : undefined;
-    },
-    enumerable: true,
-    configurable: true
-  });
-}
-
 
 function interceptPersistentTracking() {
 
@@ -967,27 +995,69 @@ navigator.clipboard: Accesses the clipboard, revealing interaction capabilities.
 
 */
 
+function interceptWebRTC(){
+  // Backup the original RTCPeerConnection
+  const OriginalRTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+
+  if (!OriginalRTCPeerConnection) {
+      console.error('WebRTC is not supported in this browser');
+      return;
+  }
+
+  // Override the RTCPeerConnection
+  const ModifiedRTCPeerConnection = function(config) {
+      const pc = new OriginalRTCPeerConnection(config);
+
+      // Intercept addIceCandidate
+      const originalAddIceCandidate = pc.addIceCandidate.bind(pc);
+      pc.addIceCandidate = function(candidate) {
+          if (candidate && candidate.candidate) {
+              // Log the candidate information
+              console.log('Intercepted ICE Candidate:', candidate.candidate);
+
+              // Extract IP or mDNS address
+              const ipRegex = /(\d{1,3}\.){3}\d{1,3}/;
+              const mDNSRegex = /[a-zA-Z0-9.-]+\.local/;
+              const ipMatch = candidate.candidate.match(ipRegex);
+              const mDNSMatch = candidate.candidate.match(mDNSRegex);
+
+              if (ipMatch) {
+                  console.log('Extracted IP Address:', ipMatch[0]);
+              } else if (mDNSMatch) {
+                  console.log('Extracted mDNS Address:', mDNSMatch[0]);
+              }
+          }
+          return originalAddIceCandidate(candidate);
+      };
+
+      return pc;
+  };
+
+  // Apply the modified RTCPeerConnection to the window
+  window.RTCPeerConnection = ModifiedRTCPeerConnection;
+  window.webkitRTCPeerConnection = ModifiedRTCPeerConnection;
+  window.mozRTCPeerConnection = ModifiedRTCPeerConnection;
+}
+
 function init() {
-  interceptUserMedia();
-  interceptFontMetrics();
-  interceptCanvasFingerprint();
-  interceptAudioFingerprint();
-  interceptScreenFingerprint();
-  interceptTimezoneFingerprint();
-  interceptHardwareConcurrency();
-  interceptMaxTouchPoints();
-  interceptPluginEnumerationFingerprint();
-  interceptCacheFingerprint();
-  interceptAnimationFingerprint();
-  interceptFontEnumerationFingerprint();
+  //interceptWebRTC();
+  interceptUserMedia();   // NOT considered FINGERPRINT
+  interceptFontMetrics_AND_FontEnumeration();   // Covered
+  interceptCanvasFingerprint();   // Covered
+  interceptAudioFingerprint();    // Covered
+  interceptScreenFingerprint();   // Covered
+  interceptTimezoneFingerprint();      // Covered
+  interceptHardwareConcurrency();      // Covered
+  interceptMaxTouchPoints();         // Covered
+  interceptPluginEnumerationFingerprint();    // Covered
+  interceptCacheFingerprint();             //   MISSING
+  interceptAnimationFingerprint();      // Covered
   //interceptPersistentTracking();
   //interceptGeoLocationReading();
   //interceptCookieTraveling();
-  interceptBatteryFingerprint();
+  interceptBatteryFingerprint();     // Covered 
   //interceptNetworkConnectionInformation();
   //interceptPermissionsEnumerationFingerprint();
 }
 
 init();
-
-
