@@ -1,5 +1,6 @@
 // Global variables
 var activeTab, signal = true, signal2 = true, rule = true;
+const logLevel = 2; // LOG LEVEL: 0 - low, 1 - medium, 2 - high, 4 - intensive
 
 const types = [
   'cookies',
@@ -29,21 +30,21 @@ function mainObj() {
   };
   this.url = "";
   this.calls = [];
-  this.camera = {enabled: undefined, muted: undefined};
-  this.audio = {enabled: undefined, muted: undefined};
   this.cname = [];
-  this.fontMetrics = {offsetWidth: 0, offsetHeight: 0, scrollWidth: 0, scrollHeight: 0, getBoundingClientRect: 0, window: {getComputedStyle: 0}};
-  this.canvas = {present: false, getContext: false, toDataURL: false};
-  this.audioctx = {audioContext: false, createOscillator: false, oscillator: {type: false, frequency: {value: false}}, createDynamicsCompressor: false, destination: false, startRendering: false};
-  this.screen = {width: false, height: false};
-  this.timezone = false;
-  this.hardwareConcurrency = false;
-  this.pluginEnumeration = {window: {onmessage: false, fetch: 0}, performance: { getEntriesByType: false }};
-  this.cache = {performance: {now: false}, typedArrayConstructors: false};
-  this.animation = {window: {requestAnimationFrame: false}};
-  this.fontEnumeration = {top: 0, left: 0, position: 0, textContent: 0, fontFamily: 0, canvasmeasureText: 0, canvasfont: 0};
-  this.battery = {charging: false, chargingTime: false, dischargingTime: false, level: false, navigator: {getBattery: false}};
-  this.maxTouchPoints = {present: false}
+  this.camera = {status: 'safe'};
+  this.audio = {status: 'safe'};
+  this.fontMetrics = {status: 'safe'};
+  this.canvas = {status: 'safe'};
+  this.audioctx = {status: 'safe'};
+  this.screen = {status: 'safe'};
+  this.timezone = {status: 'safe'};
+  this.hardwareConcurrency = {status: 'safe'};
+  this.pluginEnumeration = {status: 'safe'};
+  this.cache =  {status: 'safe'};
+  this.animation = {status: 'safe'};
+  this.fontEnumeration = {status: 'safe'};
+  this.battery = {status: 'safe'};
+  this.maxTouchPoints = {status: 'safe'}
 }
 
 function parseNested(str) {
@@ -101,8 +102,9 @@ function parseResultToMainObj(result, url) {
   return tmp_obj;
 }
 
-function setObj(obj, popup = true){
+function setObj(obj, freeGetSignal = false, popup = true){
   chrome.storage.local.set(obj).then(() => {
+    signal = freeGetSignal;
     signal2 = true;
     console.log("I setted the object");
     if (popup) {
@@ -137,7 +139,14 @@ function setObj(obj, popup = true){
 
 */
 
+/*
+  details: {
+    
+    }
 
+*/
+
+/*
 chrome.webRequest.onBeforeRequest.addListener(
   async function(details) {
     const { url } = details;
@@ -145,7 +154,6 @@ chrome.webRequest.onBeforeRequest.addListener(
     const urlObj = new URL(url);
     const hostname = urlObj.hostname;
     const protocol = urlObj.protocol;
-
 
     if ('dns.google' == hostname || protocol == "file:") {
       return;
@@ -166,16 +174,17 @@ chrome.webRequest.onBeforeRequest.addListener(
       
         console.log(`CNAME record found for ${hostname}: ${cnameTarget}`);
 
-        chrome.action.setPopup(
-          {popup: "action/main.html"}
-        )
+        
+
         chrome.runtime.sendMessage({ action: "is_alive?" }, response => {
+
           if (chrome.runtime.lastError) {
             console.log("Error:", chrome.runtime.lastError.message);
             chrome.action.openPopup();
           } else if (!response) {
             chrome.action.openPopup();
-          }
+          } 
+
           chrome.runtime.sendMessage({ action: "cname_attempt", data: {hostname: hostname, cnameTarget: cnameTarget} }, response => {
             if (chrome.runtime.lastError) {
               console.error("Error:", chrome.runtime.lastError.message);
@@ -242,18 +251,16 @@ chrome.webRequest.onBeforeRequest.addListener(
       console.error("Error detecting CNAME:", error);
     }
   },
-  {urls: ["https://*/*", "http://*/*"], types: [ "main_frame", "sub_frame", "script", "image", "stylesheet", "object", "xmlhttprequest", "other" ]}
+  {urls: ["https://*\/*", "http://*\/*"], types: [ "main_frame", "sub_frame", "script", "image", "stylesheet", "object", "xmlhttprequest", "other" ]}
 );
 
 
-
+*/
 
 function mediaDevices_ActionHandler(url, data) {
 
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
-
 
     if (data.audio) {
       tmp_obj.audio.muted = data.audio.muted;
@@ -270,7 +277,7 @@ function mediaDevices_ActionHandler(url, data) {
     obj[url] = JSON.stringify(tmp_obj);
 
     console.log('obj getUserMedia', parseNested(obj[url]));
-    setObj(obj);      // obj set
+    setObj(obj, true);      // obj set
   });
 
 }
@@ -278,7 +285,6 @@ function mediaDevices_ActionHandler(url, data) {
 function camera_ActionHandler(url, data) {
 
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
     
     if (data == 'enabled') {
@@ -297,7 +303,7 @@ function camera_ActionHandler(url, data) {
     
     console.log('obj camera', parseNested(obj[url]));
 
-    setObj(obj);      // obj set
+    setObj(obj, true);      // obj set
   });
 
 }
@@ -305,7 +311,6 @@ function camera_ActionHandler(url, data) {
 function microphone_ActionHandler(url, data) {
 
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
 
     if (data == 'enabled') {
@@ -324,7 +329,7 @@ function microphone_ActionHandler(url, data) {
 
     console.log('obj microfone', parseNested(obj[url]));
 
-    setObj(obj);      // obj set
+    setObj(obj, true);      // obj set
   });
 
 }
@@ -332,23 +337,18 @@ function microphone_ActionHandler(url, data) {
 function fontMetrics_ActionHandler(url, data) {
 
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
-    let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
+    let tmp_obj = parseResultToMainObj(result[url], url);      
 
-    console.log('parsed storage', tmp_obj);
-    if (data == 'offsetWidth')  tmp_obj.fontMetrics.offsetWidth++;
-    else if (data == 'offsetHeight')  tmp_obj.fontMetrics.offsetHeight++;
-    else if (data == 'scrollWidth')  tmp_obj.fontMetrics.scrollWidth++;
-    else if (data == 'scrollHeight')  tmp_obj.fontMetrics.scrollHeight++;
-    else if (data == 'getComputedStyle')  tmp_obj.fontMetrics.getComputedStyle++;
-    else if (data == 'getBoundingClientRect')  tmp_obj.fontMetrics.getBoundingClientRect++;
+    (logLevel >= 2) ? console.log('font metrics parsed storage', tmp_obj): null;
 
+    (data !== tmp_obj.fontMetrics.status) ? tmp_obj.fontMetrics.status = data: null;
+    
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj fontMetrics', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream font metrics', parseNested(obj[url])) : null;
 
-    setObj(obj, false);      // obj set
+    setObj(obj, true, false);
   });
 
 }
@@ -357,75 +357,48 @@ function canvas_ActionHandler(url, data) {
 
 
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
 
-    console.log('parsed storage', tmp_obj);
-    if (data == 'document.createElement' || data == 'document.getElementsByTagName') {
-      tmp_obj.canvas.present = true;
-    } else if (data == 'HTMLCanvasElement.getContext') {
-      tmp_obj.canvas.present = true;
-    } else if (data == 'HTMLCanvasElement.toDataURL') {
-      tmp_obj.canvas.toDataURL = true;
-    }
+    (logLevel >= 2) ? console.log('parsed storage canvas ', tmp_obj) : null;
+    (data !== tmp_obj.canvas.status) ? tmp_obj.canvas.status = data: null;    
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj canvas', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream canvas', parseNested(obj[url])) : null;
 
-    setObj(obj, false);       // obj set
+    setObj(obj, true, false);       // obj set
   });
 }
 
 function audioctx_ActionHandler(url, data) {
 
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
 
-    if (data == 'window.AudioContext' || data == 'window.OfflineAudioContext') {
-      tmp_obj.audioctx.audioContext = true;
-    } else if (data == 'BaseAudioContext.createOscillator') {
-      tmp_obj.audioctx.createOscillator = true;
-    } else if (data == 'oscillatorNodeObject.type') {
-      tmp_obj.audioctx.oscillator.type = true;
-    } else if (data == 'oscillatorNodeObject.frequency.value') {
-      tmp_obj.audioctx.oscillator.frequency.value = true;
-    } else if (data == 'DynamicsCompressorNode') {
-      tmp_obj.audioctx.createDynamicsCompressor = true;
-    } else if (data == 'AudioContext.destination') {
-      tmp_obj.audioctx.destination = true;
-    } else if (data == 'AudioContext.startRendering') {
-      tmp_obj.audioctx.startRendering = true;
-    }
+    (data !== tmp_obj.audioctx.status) ? tmp_obj.audioctx.status = data: null;   
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj audio ctx ', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream audioctx ', parseNested(obj[url])) : null;
 
-    setObj(obj, false);      // obj set
+    setObj(obj, true, false);      // obj set
   });
 }
 
 function screen_ActionHandler(url, data) {
 
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
 
-    if (data == 'width') {
-      tmp_obj.screen.width = true;
-    } else if (data == 'height') {
-      tmp_obj.screen.height = true;
-    }
+    (data !== tmp_obj.screen.status) ? tmp_obj.screen.status = data: null;   
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj screen fp ', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream screen ', parseNested(obj[url])) : null;
 
-    setObj(obj, false);      // obj set
+    setObj(obj, true, false);      // obj set
   });
 
 
@@ -433,161 +406,121 @@ function screen_ActionHandler(url, data) {
 
 function timezone_ActionHandler(url, data) {
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
 
-    if (data == '1') {
-      tmp_obj.timezone = true;
-    } 
+    (data !== tmp_obj.timezone.status) ? tmp_obj.timezone.status = data: null;   
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj timezone fp ', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream timezone ', parseNested(obj[url])) : null;
 
-    setObj(obj, false);      // obj set
+    setObj(obj, true, false);      // obj set
   });
 }
 
 function hwConcurrency_ActionHandler(url, data) {
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
 
-    if (data == '1') {
-      tmp_obj.hardwareConcurrency = true;
-    } 
+    (data !== tmp_obj.hardwareConcurrency.status) ? tmp_obj.hardwareConcurrency.status = data: null;   
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj hardwareConcurrency fp ', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream hardwareConcurrency ', parseNested(obj[url])) : null;
 
-    setObj(obj, false);      // obj set
+    setObj(obj, true, false);      // obj set
   });
 }
 
 function pluginEnumeration_ActionHandler(url, data) {
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
 
-    if (data == 'window.onmessage') {
-      tmp_obj.pluginEnumeration.window.onmessage = true;
-    } else if (data == 'window.fetch') {
-      tmp_obj.pluginEnumeration.window.fetch = tmp_obj.pluginEnumeration.window.fetch + 1;
-    } else if (data == 'performance.getEntriesByType') {
-      tmp_obj.pluginEnumeration.performance.getEntriesByType = true;
-    }
+    (data !== tmp_obj.pluginEnumeration.status) ? tmp_obj.pluginEnumeration.status = data: null;   
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj pluginEnumeration fp ', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream pluginEnumeration ', parseNested(obj[url])) : null;
 
-    setObj(obj, false);      // obj set
+    setObj(obj, true, false);      // obj set
   });
 }
 
 function cache_ActionHandler(url, data) {
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
 
-    if (data == 'performance.now') {
-      tmp_obj.cache.performance.now = true;
-    } else {
-      tmp_obj.cache.typedArrayConstructors = true;
-    }
+    (data !== tmp_obj.cache.status) ? tmp_obj.cache.status = data: null;   
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj cache fp ', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream cache ', parseNested(obj[url])) : null;
 
-    setObj(obj, false);      // obj set
+    setObj(obj, true, false);      // obj set
   });
 }
 
 function animation_ActionHandler(url, data) {
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
 
-    if (data == 'window.requestAnimationFrame') {
-      tmp_obj.animation.window.requestAnimationFrame = true;
-    }
+    (data !== tmp_obj.animation.status) ? tmp_obj.animation.status = data: null;   
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj animation fp ', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream animation ', parseNested(obj[url])) : null;
 
-    setObj(obj, false);      // obj set
+    setObj(obj, true, false);      // obj set
   });
 }
 
 function fontEnumeration_ActionHandler(url, data) {
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
 
-    if (data == 'top') tmp_obj.fontEnumeration.top++;
-    else if (data == 'fontFamily') tmp_obj.fontEnumeration.fontFamily++;
-    else if (data == 'textContent') tmp_obj.fontEnumeration.textContent++;
-    else if (data == 'position') tmp_obj.fontEnumeration.position++;
-    else if (data == 'left') tmp_obj.fontEnumeration.left++;
-    else if (data == 'canvasContext.measureText') tmp_obj.fontEnumeration.canvasmeasureText++;
-    else if (data == 'canvasContext.font') tmp_obj.fontEnumeration.canvasfont++;
+    (data !== tmp_obj.fontEnumeration.status) ? tmp_obj.fontEnumeration.status = data: null;
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj font enumeration fp ', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream font enumeration ', parseNested(obj[url])) : null;
 
-    setObj(obj, false);      // obj set
+    setObj(obj, true, false);      // obj set
   });
 }
 
 function maxTouchPoints_ActionHandler(url, data) {
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
     
-    if (data == '1') 
-      tmp_obj.maxTouchPoints.present = true;
+    (data !== tmp_obj.maxTouchPoints.status) ? tmp_obj.maxTouchPoints.status = data: null;   
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj maxtouchpoints fp ', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream maxtouchpoints ', parseNested(obj[url])) : null;
 
-    setObj(obj);      // obj set
+    setObj(obj, true);      // obj set
   });
 }
 
 function battery_ActionHandler(url, data) {
   chrome.storage.local.get([url]).then((result) => {
-    signal = true;
     let tmp_obj = parseResultToMainObj(result[url], url);          // obj construction
     
-    if (data == '1') 
-      tmp_obj.battery.charging = true;
-    else if (data == 'chargingTime') 
-        tmp_obj.battery.chargingTime = true;
-    else if (data == 'dischargingTime') 
-        tmp_obj.battery.dischargingTime = true;
-    else if (data == 'level') 
-        tmp_obj.battery.level = true;
-    else if (data == 'navigator.getBattery') 
-        tmp_obj.battery.navigator.getBattery = true;
+    (data !== tmp_obj.battery.status) ? tmp_obj.battery.status = data: null;   
 
     const obj = {};
     obj[url] = JSON.stringify(tmp_obj);
 
-    console.log('obj baterry fp ', parseNested(obj[url]));
+    (logLevel >= 2) ? console.log('memstream baterry ', parseNested(obj[url])) : null;
 
-    setObj(obj);      // obj set
+    setObj(obj, true);      // obj set
   });
 }
 
@@ -595,7 +528,7 @@ chrome.runtime.onMessageExternal.addListener(                 // Listen for mess
   function(request, sender, sendResponse) {                   // Store captured function call data
     
     try {
-      console.log('received: ' + request.action, request);    // LOG
+      console.log('received: ' + request.action, request, sender.url);    // LOG
       console.log(signal, signal2);
 
       const action = request.action;
@@ -615,7 +548,7 @@ chrome.runtime.onMessageExternal.addListener(                 // Listen for mess
               microphone_ActionHandler(sender.url, request.data);
           });
         break;
-        case 'font-metrics':
+        case 'fontMetrics':
           waitForSignal().then(() => {
               fontMetrics_ActionHandler(sender.url, request.data);
           });
@@ -645,7 +578,7 @@ chrome.runtime.onMessageExternal.addListener(                 // Listen for mess
               hwConcurrency_ActionHandler(sender.url, request.data);
           });
         break;
-        case 'plugin-enumeration':
+        case 'pluginEnumeration':
           waitForSignal().then(() => {
               pluginEnumeration_ActionHandler(sender.url, request.data);
           });
@@ -690,7 +623,7 @@ chrome.tabs.onActivated.addListener(
     chrome.tabs.get(info.tabId, function (tab) {
       waitForSignal().then(() => {
           chrome.storage.local.get([tab.url]).then((result) => {
-            signal = true;
+
             let tmp_obj = parseResultToMainObj(result[tab.url]);          // obj construction
 
             let promises = types.map(type => {
@@ -714,7 +647,7 @@ chrome.tabs.onActivated.addListener(
               let obj = {};
               obj[tab.url] = JSON.stringify(tmp_obj);
               console.log('ContentSetting for ', parseNested(obj[tab.url]));
-              setObj(obj);      // obj set
+              setObj(obj, true);      // obj set
             });
           });
       });
@@ -731,6 +664,39 @@ chrome.runtime.onInstalled.addListener(function() {
 
 // Listen for tab refreshes
 chrome.webNavigation.onCommitted.addListener(function(details) {
+    
+  chrome.tabs.get(details.tabId, function (tab) {
+    waitForSignal().then(() => {
+        chrome.storage.local.get([tab.url]).then((result) => {
+
+          let tmp_obj = parseResultToMainObj(result[tab.url]);          // obj construction
+
+          let promises = types.map(type => {
+            return new Promise((resolve, reject) => {
+              if (chrome.contentSettings[type]) {
+                chrome.contentSettings[type].get({ primaryUrl: tab.url }, function(info) {
+                  if (typeof info === "undefined") {
+                    resolve();
+                  } else {
+                    tmp_obj.permissions[type] = info.setting;
+                    resolve();
+                  }
+                });
+              } else {
+                resolve();
+              }
+            });
+          });
+
+          Promise.all(promises).then(() => {
+            let obj = {};
+            obj[tab.url] = JSON.stringify(tmp_obj);
+            console.log('ContentSetting for ', parseNested(obj[tab.url]));
+            setObj(obj, true);      // obj set
+          });
+        });
+    });
+  });
 
   chrome.tabs.get(details.tabId, function (tab) {
     console.log("tab url: ", tab.url);
@@ -739,7 +705,7 @@ chrome.webNavigation.onCommitted.addListener(function(details) {
       return;
     } else {
       if (details.transitionType === 'reload') {
-        console.log('Tab refreshed:', details.tabId);
+        console.log('Tab refreshed:', details.tabId, details.windowId);
         // Perform any action you need here
         waitForSignal().then(() => {
           chrome.tabs.get(details.tabId, function (tab) {
@@ -759,22 +725,15 @@ chrome.webNavigation.onCommitted.addListener(function(details) {
 // Listen for tab closures
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
   console.log('Tab closed:', tabId);
-  chrome.tabs.get(tabId, function (tab) {
-    console.log("tab url: ", tab.url);
-    if (!tab.url.startsWith('http'))
-      return;
-    else {
-      waitForSignal().then(() => {
-        chrome.tabs.get(tabId, function (tab) {
-          // clear local storage
-          console.log(tab.url);
-          chrome.storage.local.remove(tab.url).then((result) => {  signal = true, signal2 = true; console.log("REMOVED") });
-        });
+  /*
+    waitForSignal().then(() => {
+      chrome.tabs.get(tabId, function (tab) {
+        // clear local storage
+        console.log("tab url: ", tab.url);
+        chrome.storage.local.remove(tab.url).then((result) => {  signal = true, signal2 = true; console.log("REMOVED") });
       });
-    }
-  });
-
-
+    });
+  */
 });
 
 // Listen for tab closures

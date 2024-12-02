@@ -41,7 +41,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action == 'is_alive?') {
     sendResponse({success: true});
   } else if (message.action == 'cname_attempt') {
-    console.log("cname_attempt");
     let resp = window.confirm(message.data.hostname + ' redirected to the cname ' + message.data.cnameTarget + ', block next time?');
     if (resp == true) {
       sendResponse({block: true});
@@ -56,7 +55,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 document.addEventListener('DOMContentLoaded', function () {
 
-  chrome.tabs.query({ highlighted: true}, function (tabs) {
+  chrome.tabs.query({ active: true, currentWindow: true}, function (tabs) {
     let current = tabs[0];
     incognito = current.incognito;
     let url = current.url;
@@ -67,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (!isEmpty(result)) {
         contentSettingsObj = JSON.parse(result[url]);
+
         if (contentSettingsObj.camera.enabled && !contentSettingsObj.camera.muted) {
           document.getElementById('camera-green').style.display = 'none';
           document.getElementById('camera-yellow-muted').style.display = 'none';
@@ -111,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('audio-red').style.display = 'none';
         }
 
-        console.log(contentSettingsObj);
         document.getElementById('url').innerHTML = hostname;
   
         let elem = document.getElementById('contentSettings');
@@ -122,222 +121,134 @@ document.addEventListener('DOMContentLoaded', function () {
         });
   
         // Font Metrics
-        let elem3 = document.querySelector("#fontMetrics .result");
-        // Rating = SUM(FontFamily, OffSetWidth, OffSetHeight)
-        let rating = Object.values(contentSettingsObj.fontMetrics).reduce((total, currentValue) => Number.isInteger(currentValue) ? total + currentValue : total, 0);
-        if (rating < 5 ) {
-          elem3.innerHTML= "safe";
-          elem3.style.backgroundColor = "Green";
-        } else if (rating < 50 ) {
-          elem3.innerHTML= "low";
-          elem3.style.backgroundColor = "Azure";
-        } else if (rating < 200) {
-          elem3.innerHTML= "medium";
-          elem3.style.backgroundColor = "Cornsilk";
-        } else if (rating < 800) {
-          elem3.innerHTML= "high";
-          elem3.style.backgroundColor = "DarkOrange";
-        } else {
-          elem3.innerHTML= "very high";
-          elem3.style.backgroundColor = "DarkRed";
-        }
+        let fontmetricsElem = document.querySelector("#fontMetrics .result");
+        fontmetricsElem.innerHTML= contentSettingsObj.fontMetrics.status;
+
+        (contentSettingsObj.fontMetrics.status === "very high") ? 
+        fontmetricsElem.style.backgroundColor = "DarkRed" :
+        (contentSettingsObj.fontMetrics.status === "high") ?
+        fontmetricsElem.style.backgroundColor = "DarkOrange" :
+        (contentSettingsObj.fontMetrics.status === "medium") ?
+        fontmetricsElem.style.backgroundColor = "Cornsilk" :
+        (contentSettingsObj.fontMetrics.status === "low") ?
+        fontmetricsElem.style.backgroundColor = "Azure" : fontmetricsElem.style.backgroundColor = "Green";
   
         // Canvas Metrics
-        let elem4 = document.querySelector("#canvasFingerprint .result");
-        if (contentSettingsObj.canvas.present && contentSettingsObj.canvas.toDataURL) {
-          elem4.innerHTML= "very high";
-          elem4.style.backgroundColor = "DarkRed";
-        } else if (contentSettingsObj.canvas.present) {
-          elem4.innerHTML= "medium";
-          elem4.style.backgroundColor = "Cornsilk";
-        } else {
-          elem4.innerHTML= "safe";
-          elem4.style.backgroundColor = "Green";
-        }
+        let canvasElem = document.querySelector("#canvasFingerprint .result");
+        canvasElem.innerHTML = contentSettingsObj.canvas.status;
+        (contentSettingsObj.canvas.status === "very high") ?
+        canvasElem.style.backgroundColor = "DarkRed":
+        (contentSettingsObj.canvas.status === "medium") ?
+        canvasElem.style.backgroundColor = "Cornsilk" : canvasElem.style.backgroundColor = "Green";
 
         // Audio Fingerprint
-        let elem5 = document.querySelector("#audioFingerprint .result");
-        if (contentSettingsObj.audioctx.audioContext && contentSettingsObj.audioctx.startRendering && 
-          contentSettingsObj.audioctx.createOscillator && contentSettingsObj.audioctx.createDynamicsCompressor
-           && contentSettingsObj.audioctx.oscillator.type && contentSettingsObj.audioctx.oscillator.frequency.value
-           && ontentSettingsObj.destination) {
-          elem5.innerHTML= "very high";
-          elem5.style.backgroundColor = "DarkRed";
-        } else if (contentSettingsObj.audioctx.audioContext && contentSettingsObj.audioctx.startRendering && 
-        (contentSettingsObj.audioctx.createOscillator || contentSettingsObj.audioctx.createDynamicsCompressor)
-        && (contentSettingsObj.audioctx.oscillator.type || contentSettingsObj.audioctx.oscillator.frequency.value)
-        && contentSettingsObj.audioctx.destination) {
-          elem5.innerHTML= "high";
-          elem5.style.backgroundColor = "DarkOrange";         
-        } else if (contentSettingsObj.audioctx.audioContext && contentSettingsObj.audioctx.startRendering) {
-          elem5.innerHTML= "medium";
-          elem5.style.backgroundColor = "Cornsilk";
-        } else {
-          elem5.innerHTML= "safe";
-          elem5.style.backgroundColor = "Green";
-        }
-
+        let audioctxElem = document.querySelector("#audioFingerprint .result");
+        audioctxElem.innerHTML = contentSettingsObj.audioctx.status;
+        (contentSettingsObj.audioctx.status === "very high") ?
+        audioctxElem.style.backgroundColor = "DarkRed" :
+        (contentSettingsObj.audioctx.status === "high") ?
+        audioctxElem.style.backgroundColor = "DarkOrange" :         
+        (contentSettingsObj.audioctx.status === "medium") ?
+        audioctxElem.style.backgroundColor = "Cornsilk" :
+        (contentSettingsObj.audioctx.status === "low") ?
+        audioctxElem.innerHTML= "Azure" : audioctxElem.style.backgroundColor = "Green";
+        
         // Screen Fingerprint
-        let elem6 = document.querySelector("#screenFingerprint .result");
-        if (contentSettingsObj.screen.width && contentSettingsObj.screen.height) {
-          elem6.innerHTML= "very high";
-          elem6.style.backgroundColor = "DarkRed";
-        } else if (contentSettingsObj.screen.width || contentSettingsObj.screen.height) {
-          elem6.innerHTML= "medium";
-          elem6.style.backgroundColor = "Cornsilk";
-        } else {
-          elem6.innerHTML= "safe";
-          elem6.style.backgroundColor = "Green";
-        }
+        let screenElem = document.querySelector("#screenFingerprint .result");
+        screenElem.innerHTML = contentSettingsObj.screen.status;
+        (contentSettingsObj.screen.status === "very high") ?
+        screenElem.style.backgroundColor = "DarkRed" :
+        (contentSettingsObj.screen.status === "medium") ?
+        screenElem.style.backgroundColor = "Cornsilk": screenElem.style.backgroundColor = "Green";
 
         // Timezone Fingerprint
-        let elem7 = document.querySelector("#timezoneFingerprint .result");
-        if (contentSettingsObj.timezone) {
-          elem7.innerHTML= "very high";
-          elem7.style.backgroundColor = "DarkRed";
-        }  else {
-          elem7.innerHTML= "safe";
-          elem7.style.backgroundColor = "Green";
-        }
+        let timezoneElem = document.querySelector("#timezoneFingerprint .result");
+        timezoneElem.innerHTML = contentSettingsObj.timezone.status;
+        (contentSettingsObj.timezone.status === "very high") ?
+        timezoneElem.style.backgroundColor = "DarkRed" : timezoneElem.style.backgroundColor = "Green";
 
         // Hardware Concurrency Fingerprint
-        let elem8 = document.querySelector("#hwConcurrencyFingerprint .result");
-        if (contentSettingsObj.hardwareConcurrency) {
-          elem8.innerHTML= "very high";
-          elem8.style.backgroundColor = "DarkRed";
-        }  else {
-          elem8.innerHTML= "safe";
-          elem8.style.backgroundColor = "Green";
-        }
+        let hwConcurrencyElem = document.querySelector("#hwConcurrencyFingerprint .result");
+        hwConcurrencyElem.innerHTML = contentSettingsObj.hardwareConcurrency.status;
+        (contentSettingsObj.hardwareConcurrency.status === "very high") ?
+        hwConcurrencyElem.style.backgroundColor = "DarkRed": hwConcurrencyElem.style.backgroundColor = "Green";
 
         // Plugin Enumeration Fingerprint
-        let elem9 = document.querySelector("#pluginEnumerationFingerprint .result");
-        let rating2 = 0;
+        let pluginEnumElem = document.querySelector("#pluginEnumerationFingerprint .result");
+        pluginEnumElem.innerHTML = contentSettingsObj.pluginEnumeration.status;
 
-        if (contentSettingsObj.pluginEnumeration.window.onmessage)  rating2++;
-        if (contentSettingsObj.pluginEnumeration.window.fetch > 0)  rating2++;
-        if (contentSettingsObj.pluginEnumeration.performance.getEntriesByType) rating2++;
-
-        if (contentSettingsObj.pluginEnumeration.window.fetch > 100 || rating2 == 3) {
-          elem9.innerHTML= "very high";
-          elem9.style.backgroundColor = "DarkRed";
-        } else if (contentSettingsObj.pluginEnumeration.window.fetch > 50 || contentSettingsObj.pluginEnumeration.performance.getEntriesByType) {
-          elem9.innerHTML= "high";
-          elem9.style.backgroundColor = "DarkOrange";
-        } else if (contentSettingsObj.pluginEnumeration.window.fetch > 30 || rating2 == 2) {
-          elem9.innerHTML= "medium";
-          elem9.style.backgroundColor = "Cornsilk";
-        } else if (rating2 == 1) {
-          elem9.innerHTML= "low";
-          elem9.style.backgroundColor = "Azure";
-        } else if ( rating2 == 0 ) {
-          elem9.innerHTML= "safe";
-          elem9.style.backgroundColor = "Green";
-        }
-
+        (contentSettingsObj.pluginEnumeration.status === "very high") ?
+        pluginEnumElem.style.backgroundColor = "DarkRed":
+        (contentSettingsObj.pluginEnumeration.status === "high") ?
+        pluginEnumElem.style.backgroundColor = "DarkOrange":
+        (contentSettingsObj.pluginEnumeration.status === "medium") ?
+        pluginEnumElem.style.backgroundColor = "Cornsilk":
+        (contentSettingsObj.pluginEnumeration.status === "low") ?
+        pluginEnumElem.style.backgroundColor = "Azure": pluginEnumElem.style.backgroundColor = "Green";
 
         // Cache Fingerprint
-        let elem10 = document.querySelector("#cacheFingerprint .result");
+        let cacheElem = document.querySelector("#cacheFingerprint .result");
+        cacheElem.innerHTML = contentSettingsObj.cache.status;
 
-        if (contentSettingsObj.cache.performance.now && contentSettingsObj.cache.typedArrayConstructors) {
-          elem10.innerHTML= "very high";
-          elem10.style.backgroundColor = "DarkRed";
-        } else if (contentSettingsObj.cache.performance.now || contentSettingsObj.cache.typedArrayConstructors) {
-          elem10.innerHTML= "medium";
-          elem10.style.backgroundColor = "Cornsilk";
-        } else {
-          elem10.innerHTML= "low";
-          elem10.style.backgroundColor = "Azure";
-        }
+        (contentSettingsObj.cache.status === "very high") ?
+        cacheElem.style.backgroundColor = "DarkRed":
+        (contentSettingsObj.cache.status == "medium") ?
+        cacheElem.style.backgroundColor = "Cornsilk": cacheElem.style.backgroundColor = "Green";
 
         // Animation Fingerprint
-        let elem11 = document.querySelector("#animationFingerprint .result");
-
-        if (contentSettingsObj.animation.window.requestAnimationFrame) {
-          elem11.innerHTML= "very high";
-          elem11.style.backgroundColor = "DarkRed";
-        } else {
-          elem11.innerHTML= "safe";
-          elem11.style.backgroundColor = "Green";
-        }
+        let animationElem = document.querySelector("#animationFingerprint .result");
+        animationElem.innerHTML = contentSettingsObj.animation.status;
+        (contentSettingsObj.animation.status === "very high") ?
+        animationElem.style.backgroundColor = "DarkRed": 
+        animationElem.style.backgroundColor = "Green";
 
         // Font Enumeration Fingerprint
-        let elem12 = document.querySelector("#fontEnumerationFingerprint .result");
-        // Rating = SUM(FontFamily, OffSetWidth, OffSetHeight)
-        let rating3 = Object.values(contentSettingsObj.fontEnumeration).reduce((total, currentValue) => Number.isInteger(currentValue) ? total + currentValue : total, 0);
+        let fontEnumElem = document.querySelector("#fontEnumerationFingerprint .result");
+        fontEnumElem.innerHTML = contentSettingsObj.fontEnumeration.status;
+        (contentSettingsObj.fontEnumeration.status === "very high") ?
+        fontEnumElem.style.backgroundColor = "DarkRed":
+        (contentSettingsObj.fontEnumeration.status === "high") ?
+        fontEnumElem.style.backgroundColor = "DarkOrange":
+        (contentSettingsObj.fontEnumeration.status === "medium") ?
+        fontEnumElem.style.backgroundColor = "Cornsilk":
+        (contentSettingsObj.fontEnumeration.status === "low") ?
+        fontEnumElem.style.backgroundColor = "Azure": fontEnumElem.style.backgroundColor = "Green";
 
-        if (rating3 == 0) {
-          elem12.innerHTML= "safe";
-          elem12.style.backgroundColor = "Green";
-        } else if (rating3 < 20 ) {
-          elem12.innerHTML= "low";
-          elem12.style.backgroundColor = "Azure";
-        } else if (rating3 < 40) {
-          elem12.innerHTML= "medium";
-          elem12.style.backgroundColor = "Cornsilk";
-        } else if (rating3 < 80) {
-          elem12.innerHTML= "high";
-          elem12.style.backgroundColor = "DarkOrange";
-        } else {
-          elem12.innerHTML= "very high";
-          elem12.style.backgroundColor = "DarkRed";
-        }
 
         // Battery Fingerprint
-        let elem13 = document.querySelector("#batteryFingerprint .result");
+        let batteryElem = document.querySelector("#batteryFingerprint .result");
+        batteryElem.innerHTML = contentSettingsObj.battery.status;
+        (contentSettingsObj.battery.status === "very high") ?
+        batteryElem.style.backgroundColor = "DarkRed":
+        (contentSettingsObj.battery.status === "high") ?
+        batteryElem.style.backgroundColor = "DarkOrange":
+        (contentSettingsObj.battery.status === "medium") ?
+        batteryElem.style.backgroundColor = "Cornsilk":
+        (contentSettingsObj.battery.status === "low") ?
+        batteryElem.style.backgroundColor = "Azure": batteryElem.style.backgroundColor = "Green";
 
-        if (contentSettingsObj.battery.level && contentSettingsObj.battery.charging && (contentSettingsObj.battery.dischargingTime || contentSettingsObj.battery.chargingTime)) {
-          elem13.innerHTML= "very high";
-          elem13.style.backgroundColor = "DarkRed";
-        } else if ((contentSettingsObj.battery.level || contentSettingsObj.battery.charging) && (contentSettingsObj.battery.dischargingTime || contentSettingsObj.battery.chargingTime)) {
-          elem13.innerHTML= "high";
-          elem13.style.backgroundColor = "DarkOrange";
-        } else if ((contentSettingsObj.battery.level || contentSettingsObj.battery.charging) || (contentSettingsObj.battery.dischargingTime || contentSettingsObj.battery.chargingTime)) {
-          elem13.innerHTML= "medium";
-          elem13.style.backgroundColor = "Cornsilk";
-        } else if (contentSettingsObj.battery.navigator.getBattery) {
-          elem13.innerHTML= "low";
-          elem13.style.backgroundColor = "Azure";
-        } else {
-          elem13.innerHTML= "safe";
-          elem13.style.backgroundColor = "Green";
-        }
 
         // maxTouchPoints Fingerprint
-        let elem14 = document.querySelector("#maxTouchPointsFingerprint .result");
-
-        if (contentSettingsObj.maxTouchPoints.present) {
-          elem14.innerHTML= "very high";
-          elem14.style.backgroundColor = "DarkRed";
-        } else {
-          elem14.innerHTML= "safe";
-          elem14.style.backgroundColor = "Green";
-        }
+        let maxTouchPointsElem = document.querySelector("#maxTouchPointsFingerprint .result");
+        maxTouchPointsElem.innerHTML = contentSettingsObj.maxTouchPoints.status;
+        (contentSettingsObj.maxTouchPoints.status === "very high") ?
+        maxTouchPointsElem.style.backgroundColor = "DarkRed":
+        maxTouchPointsElem.style.backgroundColor = "Green";
 
       } else {
         console.log("Empty");
-        var b = true;
-        if (b) {
-          document.body.innerHTML = "<h1 style='min-width: 200px;min-height:100px;'>Nothing have been loaded yet ...   &#x23f3;</h1>";
-          b = false;
-        } else {
-          document.body.innerHTML = "<h1 style='min-width: 200px;min-height:100px;'>Nothing have been loaded yet ...   &#x231B;</h1>";
-          b = true;
-        }
+        b = true;
         setTimeout(() => {
           if (b) {
-            document.body.innerHTML = "<h1 style='min-width: 200px;min-height:100px;'>Nothing have been loaded yet ...   &#x23f3;</h1>";
             b = false;
+            document.body.innerHTML = "<h1 style='min-width: 200px;min-height:100px;'>Nothing have been loaded yet ...   &#x23f3;</h1>";
           } else {
             document.body.innerHTML = "<h1 style='min-width: 200px;min-height:100px;'>Nothing have been loaded yet ...   &#x231B;</h1>";
-            b = true;
           }
-          window.location.reload();
-        }, 5000);
+        }, 2000);
       }
 
-  
-        });
+    });
   });
 });
 
