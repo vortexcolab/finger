@@ -1,0 +1,39 @@
+{
+    "window": {
+        "innerHeight": false,
+        "innerWidth": false,
+        "outerHeight": false,
+        "outerWidth": false,
+        "devicePixelRatio": false,
+        "screen": {
+            "width": false,
+            "height": false,
+            "colorDepth": false,
+            "pixelDepth": false,
+            "availWidth": false,
+            "availHeight": false
+        },
+        "localStorage": false
+    },
+    "navigator": {
+        "hardwareConcurrency": false,
+        "maxTouchPoints": false,
+        "deviceMemory": false,
+        "language": false,
+        "languages": false,
+        "getBattery": false
+    },
+    "BatteryManager": {
+        "prototype": {
+            "charging": false,
+            "chargingTime": false,
+            "dischargingTime": false,
+            "level": false
+        }
+    },
+    "Date": {
+        "prototype": {
+            "getTimezoneOffset": false
+        }
+    }
+}

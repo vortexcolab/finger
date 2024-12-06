@@ -1,0 +1,47 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f4f4f9;
+}
+
+.barometer-container {
+    text-align: center;
+}
+
+.barometer {
+    width: 300px;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+}
+
+.indicator {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, green, yellow, red);
+    transition: width 0.8s ease, background-color 0.8s ease;
+}
+
+.label {
+    font-size: 16px;
+    color: #333;
+}
+
+/* Animation styles for the bar */
+@keyframes colorPulse {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(1.2); }
+    100% { filter: brightness(1); }
+}
+
+.indicator.animate {
+    animation: colorPulse 2s infinite;
+}

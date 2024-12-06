@@ -1,0 +1,1 @@
+console.log("Hardware concurrency: ", navigator.hardwareConcurrency);

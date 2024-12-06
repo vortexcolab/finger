@@ -1,0 +1,28 @@
+
+{
+  "methodOverride": [
+    { "category": ["other"], "registerType": "presence", "type": "long-term", "prototype": true, "name": "Date.prototype.getTimezoneOffset", "entropy": 36},
+    { "category": ["battery"], "registerType": "presence", "type": "none", "prototype": false, "name": "navigator.getBattery", "entropy": 0}
+  ],
+  "attributeModification": [
+    { "category": ["screen"], "registerType": "presence", "type": "mid-long-term", "prototype": false, "name": "window.screen.width",  "entropy": 50 },
+    { "category": ["screen"], "registerType": "presence", "type": "mid-long-term", "prototype": false, "name": "window.screen.height", "entropy": 50  },
+    { "category": ["screen"], "registerType": "presence", "type": "mid-term", "prototype": false, "name": "window.screen.availWidth", "entropy": 10},
+    { "category": ["screen"], "registerType": "presence", "type": "mid-term", "prototype": false, "name": "window.screen.availHeight", "entropy": 10},
+    { "category": ["screen"], "registerType": "presence", "type": "short-term", "prototype": false, "name": "window.innerHeight", "entropy": 10 },
+    { "category": ["screen"], "registerType": "presence", "type": "short-term", "prototype": false, "name": "window.innerWidth", "entropy": 10 },
+    { "category": ["screen"], "registerType": "presence", "type": "short-term", "prototype": false, "name": "window.outerHeight", "entropy": 10 },
+    { "category": ["screen"], "registerType": "presence", "type": "short-term", "prototype": false, "name": "window.outerWidth", "entropy": 10 },
+    { "category": ["screen"], "registerType": "presence", "type": "mid-long-term", "prototype": false, "name": "window.devicePixelRatio", "entropy": 10},
+    { "category": ["screen"], "registerType": "presence",  "type": "long-term", "prototype": false, "name": "window.screen.isExtended", "entropy": 2},
+    { "category": ["other"], "registerType": "presence", "type": "long-term", "prototype": false, "name": "navigator.language", "entropy": 722 },
+    { "category": ["other"], "registerType": "presence", "type": "long-term", "prototype": false, "name": "navigator.languages", "entropy": 722 },
+    { "category": ["hardware"], "registerType": "presence", "type": "long-term", "prototype": false, "name": "navigator.hardwareConcurrency", "entropy": 8 },
+    { "category": ["hardware"], "registerType": "presence", "type": "lifetime", "prototype": false, "name": "navigator.deviceMemory", "entropy": 8 },
+    { "category": ["memory"], "registerType": "presence", "type": "mid-term", "prototype": false, "name": "window.localStorage", "entropy":  5 },
+    { "category": ["battery"], "registerType": "presence", "type": "short-term", "prototype": true, "name": "BatteryManager.prototype.charging", "entropy": 2},
+    { "category": ["battery"], "registerType": "presence", "type": "short-term", "prototype": true, "name": "BatteryManager.prototype.chargingTime", "entropy": 9 },
+    { "category": ["battery"], "registerType": "presence", "type": "short-term", "prototype": true, "name": "BatteryManager.prototype.dischargingTime", "entropy": 9 },
+    { "category": ["battery"], "registerType": "presence", "type": "short-term", "prototype": true, "name": "BatteryManager.prototype.level", "entropy": 11}
+  ]
+}
