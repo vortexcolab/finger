@@ -1,0 +1,157 @@
+
+{
+  "animation": {
+    "methodOverride": [
+      { "category": ["benchmark"], "registerType": "presence",  "prototype": false, "name": "window.requestAnimationFrame", "isConstructor": false, "entropy": [0,120]},
+      { "category": ["benchmark", "cache"], "registerType": "ocurrences", "prototype": false, "name": "window.performance.now", "isConstructor": false, "entropy": [0] },
+      { "category": ["benchmark", "cache"], "registerType": "ocurrences", "prototype": false, "name": "window.performance.mark", "isConstructor": false, "entropy": [0] },
+      { "category": ["benchmark", "cache"], "registerType": "ocurrences", "prototype": false, "name": "window.performance.measure", "isConstructor": false, "entropy": [0] },
+      { "category": ["benchmark", "cache"], "registerType": "ocurrences", "prototype": false, "name": "Date.now", "isConstructor": false, "entropy": [0]},
+      { "category": ["benchmark"], "registerType": "ocurrences", "prototype": false, "name": "document.timeline.currentTime", "isConstructor": false, "entropy": [0]}
+    ],
+    "attributeModification": []
+  },
+  "audioctx": {
+    "methodOverride": [
+      {"prototype": false, "name": "window.AudioContext", "isConstructor": true, "entropy": 0},
+      {"prototype": true, "name": "BaseAudioContext.prototype.createOscillator", "entropy": 0},
+      {"prototype": true, "name": "BaseAudioContext.prototype.createDynamicsCompressor", "entropy": 0},
+      {"prototype": true, "name": "OfflineAudioContext.prototype.startRendering"}
+    ],
+    "attributeModification": [
+      {"prototype": true, "name": "OscillatorNode.prototype.frequency"},
+      {"prototype": true, "name": "OscillatorNode.prototype.type"}
+
+    ],
+    "proxy": []
+  },
+  "battery": {
+    "methodOverride": [
+      { "prototype": false, "name": "navigator.getBattery", "entropy": 0}
+    ],
+    "attributeModification": [
+      { "prototype": true, "name": "BatteryManager.prototype.charging", "entropy": 2},
+      { "prototype": true, "name": "BatteryManager.prototype.chargingTime", "entropy": 9 },
+      { "prototype": true, "name": "BatteryManager.prototype.dischargingTime", "entropy": 9 },
+      { "prototype": true, "name": "BatteryManager.prototype.level", "entropy": 11}
+    ]
+  },
+  "cache": {
+    "methodOverride": [
+      {"prototype": false, "name": "performance.now", "isConstructor": false},
+      {"prototype": false, "name": "window.Int8Array", "isConstructor": true},
+      {"prototype": false, "name": "window.Uint8Array", "isConstructor": true},
+      {"prototype": false, "name": "window.Uint8ClampedArray", "isConstructor": true},
+      {"prototype": false, "name": "window.Int16Array", "isConstructor": true},
+      {"prototype": false, "name": "window.Uint16Array", "isConstructor": true},
+      {"prototype": false, "name": "window.Int32Array", "isConstructor": true},
+      {"prototype": false, "name": "window.Uint32Array", "isConstructor": true},
+      {"prototype": false, "name": "window.Float32Array", "isConstructor": true},
+      {"prototype": false, "name": "window.Float64Array", "isConstructor": true},
+      {"prototype": false, "name": "window.BigInt64Array", "isConstructor": true},
+      {"prototype": false, "name": "window.BigUint64Array", "isConstructor": true}
+    ],
+    "attributeModification": [
+      {"prototype": false, "name": "window.crossOriginIsolated"}
+    ],
+    "proxy": []
+  },
+  "canvas": {
+    "methodOverride": [
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.getContext" },
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.toDataURL" },
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.rect" },
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.isPointInPath" },
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.beginPath" },
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.arc" },
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.closePath" },
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.fill" },
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.fillRect" },
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.fillText" },
+      { "prototype": false, "name": "document.getElementsByTagName", "params": ["canvas"] },
+      { "prototype": false, "name": "document.createElement", "params": ["canvas"] }
+    ],
+    "attributeModification": [
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.width" },
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.height" },
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.textBaseline" },
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.fillStyle" },
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.font" },
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.globalCompositeOperation" }
+    ]
+  },
+  "fontEnumeration": {
+    "methodOverride": [
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.measureText" }
+    ],
+    "attributeModification": [
+      { "prototype": true, "name": "CanvasRenderingContext2D.prototype.font" },
+      { "prototype": true, "name": "HTMLElement.prototype.offsetWidth" },
+      { "prototype": true, "name": "HTMLElement.prototype.offsetHeight" },
+      { "prototype": true, "name": "Node.prototype.textContent" }
+    ],
+    "proxy": [
+      { "prototype": true, "name": "HTMLElement.prototype.style",  "params": ["position", "top", "left", "fontFamily"] }
+    ]
+  },
+  "fontMetrics": {
+    "methodOverride": [
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.getContext" },
+      { "prototype": false, "name": "window.getComputedStyle" }
+    ],
+    "attributeModification": [
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.offsetWidth" },
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.offsetHeight" },
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.scrollWidth" },
+      { "prototype": true, "name": "HTMLCanvasElement.prototype.scrollHeight" }
+    ]
+  },
+  "hardwareConcurrency": {
+    "methodOverride": [],
+    "attributeModification": [
+      { "prototype": false, "name": "navigator.hardwareConcurrency" }
+    ]
+  },
+  "maxTouchPoints": {
+    "methodOverride": [],
+    "attributeModification": [
+      { "prototype": false, "name": "navigator.maxTouchPoints" }
+    ]
+  },
+  "pluginEnumeration": {
+    "methodOverride": [
+      { "prototype": false, "name": "window.fetch", "params": ["chrome://"] },
+      { "prototype": false, "name": "performance.getEntriesByType", "params": ["resource"] }
+    ],
+    "attributeModification": [
+      { "prototype": false, "name": "window.onmessage" }
+    ]
+  },
+  "screen": {
+    "attributeModification": [
+      { "prototype": false, "name": "window.screen.width" },
+      { "prototype": false, "name": "window.screen.height" },
+      { "prototype": false, "name": "window.screen.colorDepth" },
+      { "prototype": false, "name": "window.screen.pixelDepth" },
+      { "prototype": false, "name": "window.screen.availWidth" },
+      { "prototype": false, "name": "window.screen.availHeight" },
+      { "prototype": false, "name": "window.innerHeight" },
+      { "prototype": false, "name": "window.innerWidth" },
+      { "prototype": false, "name": "window.outerHeight" },
+      { "prototype": false, "name": "window.outerWidth" },
+      { "prototype": false, "name": "window.screenX" },
+      { "prototype": false, "name": "window.screenY" },
+      { "prototype": false, "name": "window.scrollX" },
+      { "prototype": false, "name": "window.scrollY" },
+      { "prototype": false, "name": "window.pageXOffset" },
+      { "prototype": false, "name": "window.pageYOffset" },
+      { "prototype": false, "name": "window.devicePixelRatio" }
+    ]
+  },
+  "timezone": {
+    "methodOverride": [
+      { "prototype": true, "name": "Date.prototype.getTimezoneOffset" }
+    ],
+    "attributeModification": []
+  }
+}
