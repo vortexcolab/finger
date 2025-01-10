@@ -3,9 +3,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
     margin: 0;
     background-color: #f4f4f9;
+    padding: 10px;
+    border: #333 1px;
+    background: rgb(174,171,176);
+background: linear-gradient(90deg, rgba(174,171,176,1) 0%, rgba(255,146,146,1) 0%, rgba(255,255,255,1) 100%);
 }
 
 .barometer-container {
@@ -26,13 +29,31 @@ body {
 .indicator {
     height: 100%;
     width: 0%;
-    background: linear-gradient(to right, green, yellow, red);
+    background: linear-gradient(to right, green, greenyellow);
     transition: width 0.8s ease, background-color 0.8s ease;
 }
 
+#tag.label {
+    display: flex;
+    width: 300px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
 .label {
-    font-size: 16px;
+    font-size: 14px;
     color: #333;
+    border-radius: 4px;
+    display: inline-block;  /* Makes the tag inline but still block-like */
+    font-family: Arial, sans-serif;  /* Simple and clean font */
+    padding: 2px 4px;  /* Padding around the text to mimic a button */
+    margin: 2px;  /* Space between tags */
+    text-transform: capitalize;  /* Capitalizes the first letter of each word */
+    font-weight: bold;  /* Bold text for more emphasis */
+    text-align: center;  /* Ensures the text is centered */
+    box-sizing: border-box;  /* Ensures padding doesn't affect the size */
+    cursor: default;  /* Default cursor to indicate it's not interactive */
+    transition: color 0.3s;  /* Smooth transition for hover effect */
 }
 
 /* Animation styles for the bar */
@@ -45,3 +66,99 @@ body {
 .indicator.animate {
     animation: colorPulse 2s infinite;
 }
+
+/* Simple, button-like tag without button functionality */
+.dangerous-tag {
+    width: 140px;
+    display: inline-block;  /* Makes the tag inline but still block-like */
+    background-color: #ff5733;  /* yellow orange background color */
+    color: white;  /* White text for contrast */
+    font-family: Arial, sans-serif;  /* Simple and clean font */
+    font-size: 14px;  /* Readable text size */
+    padding: 8px 16px;  /* Padding around the text to mimic a button */
+    border-radius: 4px;  /* Slightly rounded corners */
+    margin: 5px;  /* Space between tags */
+    text-transform: capitalize;  /* Capitalizes the first letter of each word */
+    font-weight: bold;  /* Bold text for more emphasis */
+    text-align: center;  /* Ensures the text is centered */
+    box-sizing: border-box;  /* Ensures padding doesn't affect the size */
+    cursor: default;  /* Default cursor to indicate it's not interactive */
+    transition: background-color 0.3s;  /* Smooth transition for hover effect */
+  }
+
+  /* Simple, button-like tag without button functionality */
+.infernal-tag {
+    width: 100px;
+    display: inline-block;  /* Makes the tag inline but still block-like */
+    background-color: maroon;  /* yellow orange background color */
+    color: white;  /* White text for contrast */
+    font-family: Arial, sans-serif;  /* Simple and clean font */
+    font-size: 14px;  /* Readable text size */
+    padding: 8px 16px;  /* Padding around the text to mimic a button */
+    border-radius: 4px;  /* Slightly rounded corners */
+    margin: 5px;  /* Space between tags */
+    text-transform: capitalize;  /* Capitalizes the first letter of each word */
+    font-weight: bold;  /* Bold text for more emphasis */
+    text-align: center;  /* Ensures the text is centered */
+    box-sizing: border-box;  /* Ensures padding doesn't affect the size */
+    cursor: default;  /* Default cursor to indicate it's not interactive */
+    transition: background-color 0.3s;  /* Smooth transition for hover effect */
+  }
+/* Simple, button-like tag without button functionality */
+.alarm-tag {
+    width: 100px;
+    display: inline-block;  /* Makes the tag inline but still block-like */
+    background-color: #ff0;  /* yellow orange background color */
+    color: rgb(0, 0, 0);  /* White text for contrast */
+    font-family: Arial, sans-serif;  /* Simple and clean font */
+    font-size: 14px;  /* Readable text size */
+    padding: 8px 16px;  /* Padding around the text to mimic a button */
+    border-radius: 4px;  /* Slightly rounded corners */
+    margin: 5px;  /* Space between tags */
+    text-transform: capitalize;  /* Capitalizes the first letter of each word */
+    font-weight: bold;  /* Bold text for more emphasis */
+    text-align: center;  /* Ensures the text is centered */
+    box-sizing: border-box;  /* Ensures padding doesn't affect the size */
+    cursor: default;  /* Default cursor to indicate it's not interactive */
+    transition: background-color 0.3s;  /* Smooth transition for hover effect */
+  }
+  /* Simple, button-like tag without button functionality */
+.secure-tag {
+    width: 100px;
+    display: inline-block;  /* Makes the tag inline but still block-like */
+    background-color: greenyellow;  /* yellow orange background color */
+    color: gray;  /* White text for contrast */
+    font-family: Arial, sans-serif;  /* Simple and clean font */
+    font-size: 14px;  /* Readable text size */
+    padding: 8px 16px;  /* Padding around the text to mimic a button */
+    border-radius: 4px;  /* Slightly rounded corners */
+    margin: 5px;  /* Space between tags */
+    text-transform: capitalize;  /* Capitalizes the first letter of each word */
+    font-weight: bold;  /* Bold text for more emphasis */
+    text-align: center;  /* Ensures the text is centered */
+    box-sizing: border-box;  /* Ensures padding doesn't affect the size */
+    cursor: default;  /* Default cursor to indicate it's not interactive */
+    transition: background-color 0.3s;  /* Smooth transition for hover effect */
+  }
+/* Simple, button-like tag without button functionality */
+.technique-tag {
+    display: inline-block;  /* Makes the tag inline but still block-like */
+    background-color: #f44336;  /* Red background color */
+    color: white;  /* White text for contrast */
+    font-family: Arial, sans-serif;  /* Simple and clean font */
+    font-size: 14px;  /* Readable text size */
+    padding: 8px 16px;  /* Padding around the text to mimic a button */
+    border-radius: 4px;  /* Slightly rounded corners */
+    margin: 5px;  /* Space between tags */
+    text-transform: capitalize;  /* Capitalizes the first letter of each word */
+    font-weight: bold;  /* Bold text for more emphasis */
+    text-align: center;  /* Ensures the text is centered */
+    box-sizing: border-box;  /* Ensures padding doesn't affect the size */
+    cursor: default;  /* Default cursor to indicate it's not interactive */
+    transition: background-color 0.3s;  /* Smooth transition for hover effect */
+  }
+  
+  /* Optional: hover effect */
+  .technique-tag:hover {
+    background-color: #d32f2f;  /* Darker red on hover */
+  }

@@ -37,7 +37,7 @@ chrome.runtime.onMessageExternal.addListener(                 // Listen for mess
           // Fetch both files concurrently
           const [configResponse, statusResponse] = await Promise.all([
             fetch(configUrl),
-            fetch(statusUrl),
+            fetch(statusUrl)
           ]);
 
           // Check for errors in both responses
@@ -48,12 +48,13 @@ chrome.runtime.onMessageExternal.addListener(                 // Listen for mess
             throw new Error(`Failed to fetch status: ${statusResponse.statusText}`);
           }
 
+
+
           // Parse JSON responses
           const [config, status] = await Promise.all([
             configResponse.json(),
-            statusResponse.json(),
+            statusResponse.json()
           ]);
-
           // Send the successful response
           sendResponse({ success: true, config, status });
         } catch (error) {

@@ -1,11 +1,9 @@
 // The ID of the extension we want to talk to.
-const extensionId = "mlljmejlaloeaofagliclpnmpeooljcc";
+const extensionId = "fdggdpcbakcgdghnjgpiipcenllgmgpc";
 // LOG LEVEL: 0 - low, 1 - medium, 2 - high, 4 - intensive
 const logLevel = 4;
-const tag =[];
 const config = {};
 const fingerstatus = {};
-var cEntropy = 0;
 
 
 (logLevel <= 1) ? console.log("Entraste no main.js "): null;
@@ -14,17 +12,22 @@ var cEntropy = 0;
 window.addEventListener("message", (event) => {
   if (event.data.action === "entropyRequest" && event.ports[0]) {
     const port = event.ports[0];
-    calculateStatus();
+    var data = calculateStatus();
     // Send entropy data back to the content script via the port
-    port.postMessage({ entropy: cEntropy, tag: tag});
+    port.postMessage(data);
   }
 });
 
+
 function calculateStatus() {
 
-    // Process methodOverride
-    if (config.methodOverride) {
-      for (const item of config.methodOverride) {
+  var tag =[];
+  var cEntropy = 0;
+
+  // Process methodOverride
+  if (config.methodOverride) {
+    for (const item of config.methodOverride) {
+      if (item.registerType == "presence") {
         let name = item.name;
         let parts = name.split('.');
         let target = resolvePath(parts.slice(0, -1).join('.'), fingerstatus);
@@ -33,26 +36,60 @@ function calculateStatus() {
         console.log(target, methodName, item.registerType);
         if (item.registerType && item.type != "none" && target[methodName] == true) {
           cEntropy += item.entropy;
+          if (item.category.length >= 0)
+            tag = [...new Set([...tag, ...item.category])];
         }
-
       }
     }
+  }
 
   // Process attributeModification
   if (config.attributeModification) {
       for (const item of config.attributeModification) {
-        let name = item.name;
-        let parts = name.split('.');
-        let target = resolvePath(parts.slice(0, -1).join('.'), fingerstatus);
-        let methodName = parts[parts.length - 1];
+        if (item.registerType == "presence") {
+          let name = item.name;
+          let parts = name.split('.');
+          let target = resolvePath(parts.slice(0, -1).join('.'), fingerstatus);
+          let methodName = parts[parts.length - 1];
 
-        console.log(target, methodName, item.registerType);
-        if (item.registerType && item.type != "none" && target[methodName] == true) {
-          cEntropy += item.entropy;
+          console.log(target, methodName, item.registerType);
+          if (item.registerType && item.type != "none" && target[methodName] == true) {
+            cEntropy += item.entropy;
+            if (item.category.length >= 0)
+              tag = [...new Set([...tag, ...item.category])];
+          }
         }
       }
   }
 
+  // Process techniques
+  if (config.techniques) {
+    for (const item of config.techniques) {
+      let arr = [];
+      for (const e of item.traces) {
+        arr.push(eval(e.eval));
+      }
+      console.log("arr: ", arr);
+      cEntropy += Math.max(...arr);
+    }
+
+  }
+
+  techniques.forEach((tech) => {
+    let e = Math.max(...tech.traces.map(elem => elem.getEntropy()));
+    console.log("here ", tech.name, e);
+    (e > 0) ? tag.push(tech.name) : null;
+    cEntropy += e;
+  });
+
+  console.log("Entropy: ", cEntropy);
+  return { entropy: cEntropy, tag: tag};
+
+}
+
+function get(path) {
+  if (!path) return fingerstatus;
+  return path.split('.').reduce((obj, part) => (obj ? obj[part] : undefined), fingerstatus);
 }
 
 function resolvePath(path, initValue = window) {
@@ -68,10 +105,55 @@ function updateRegisteredInterceptions(registerType, name) {
 
   if (registerType == "presence") {
     valueRef[methodName] = true;
-  } else if (registerType == "occurrences") {
+  } else if (registerType == "occurrence") {
     valueRef[methodName]++;
   }
 
+}
+
+function addToProxy({ registerType, category, prototype, name, isConstructor, entropy })  {
+  const parts = name.split('.');
+  const target = resolvePath(parts.slice(0, -2).join('.'));
+  const methodName = parts[parts.length - 2];
+  const attribute = parts[parts.length - 1];
+
+  if (!target || !(methodName in target)) {
+    console.warn(`Cannot find method: ${name}`);
+    return;
+  }
+
+  // Save the original method descriptor
+  const originalDescriptor = Object.getOwnPropertyDescriptor(target, methodName);
+
+  // Create a proxy handler for the style object
+  const proxyHandler = {
+    get(target, prop, receiver) {
+      console.log(`Accessing .${prop}`);
+      if (prop == attribute)
+        updateRegisteredInterceptions(registerType, name);
+      // Use the target directly and bind the context if necessary
+      const value = Reflect.get(target, prop, receiver);
+      if (typeof value === 'function') {
+        return value.bind(target); // Ensure proper `this` context
+      }
+      return value;
+    },
+    set(target, prop, value) {
+      console.log(`Setting .${prop} to ${value}`);
+      if (prop == attribute)
+        updateRegisteredInterceptions(registerType, name);
+      return Reflect.set(target, prop, value);
+    }
+  };
+
+  // Define a new property with a proxy on HTMLElement's prototype
+  Object.defineProperty(target, methodName, {
+    get() {
+      return new Proxy(originalDescriptor.get.call(this), proxyHandler);
+    },
+    configurable: true,
+    enumerable: true
+  });
 }
 
 function interceptMethod({ registerType, category, prototype, name, isConstructor, entropy }) {
@@ -109,6 +191,23 @@ function interceptMethod({ registerType, category, prototype, name, isConstructo
   }
 }
 
+/*
+  Info: Você está tentando acessar originalValue.value, mas Object.getOwnPropertyDescriptor retorna um descritor de propriedade, que possui as chaves value, get, set, etc.
+   Se o descritor não tiver um get ou set definido, a propriedade value é usada.
+
+  Explicação(colocar no commit):
+
+  1. Verificação do prototype:
+  O prototype de um objeto como HTMLElement não é a forma correta de obter o valor original de uma propriedade diretamente. O correto seria acessar a descrição da propriedade usando Object.getOwnPropertyDescriptor diretamente do objeto ou de seu protótipo, mas há um ponto que você precisa melhorar na lógica do código.
+
+  2. Acesso ao Descritor da Propriedade:
+  Você está tentando acessar originalValue.value, mas Object.getOwnPropertyDescriptor retorna um descritor de propriedade, que possui as chaves value, get, set, etc. Se o descritor não tiver um get ou set definido, a propriedade value é usada.
+
+  3. Problema na Lógica do prototype:
+  Ao tentar usar a variável prototype, você pode acabar confundindo a lógica de como obter a propriedade original de um objeto e de seu protótipo.
+
+*/
+
 function interceptAttribute({ registerType, category, prototype, name, isConstructor, entropy }) {
   const parts = name.split('.');
   const target = resolvePath(parts.slice(0, -1).join('.'));
@@ -122,17 +221,21 @@ function interceptAttribute({ registerType, category, prototype, name, isConstru
   console.log(target, attributeName);
 
   // Modify attribute with getter/setter
-  const originalValue = (prototype) ? Object.getOwnPropertyDescriptor(target, attributeName): target[attributeName];;
+  const originalValue = Object.getOwnPropertyDescriptor(target, attributeName);
   Object.defineProperty(target, attributeName, {
       get() {
           console.log(`Intercepted attribute: ${name}`);
           updateRegisteredInterceptions(registerType, name);
-          return (prototype) ? originalValue.value: originalValue;
+          return originalValue.get ? originalValue.get.call(this) : originalValue.value;
       },
       set(value) {
           console.log(`Modified attribute: ${name}, New value: ${value}`);
           updateRegisteredInterceptions(registerType, name);
-          (prototype) ? originalValue.value = value: originalValue = value;
+          if (originalValue.set) {
+            originalValue.set.call(this, value);
+          } else {
+            originalValue.value = value;
+          }
       },
       configurable: true,
   });
@@ -155,13 +258,11 @@ function applyConfig(config) {
   }
 
   // Handle proxy (if needed later)
-  /*
-  if (settings.proxy && settings.proxy.length > 0) {
-      for (const item of settings.proxy) {
-          // Implement proxy logic here if required
+  if (config.proxy && config.proxy.length > 0) {
+      for (const item of config.proxy) {
+        addToProxy(item);
       }
   }
-  */
 }
 
 (function () {
