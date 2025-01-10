@@ -1,5 +1,31 @@
 {
+    "HTMLCanvasElement": {
+        "prototype": {
+            "getContext": false,
+            "toDataURL": false,
+            "rect": false,
+            "isPointInPath": false,
+            "width": false,
+            "height": false
+        }
+    },
+    "CanvasRenderingContext2D": {
+        "prototype": {
+            "beginPath": false,
+            "arc": false,
+            "closePath": false,
+            "fill": false,
+            "fillRect": false,
+            "fillText": false,
+            "textBaseline": false,
+            "fillStyle": false,
+            "font": false,
+            "globalCompositeOperation": false,
+            "measureText": false
+        }
+    },
     "window": {
+        "onmessage": false,
         "innerHeight": false,
         "innerWidth": false,
         "outerHeight": false,
@@ -13,7 +39,28 @@
             "availWidth": false,
             "availHeight": false
         },
-        "localStorage": false
+        "localStorage": false,
+        "requestAnimationFrame": false,
+        "performance": {
+            "now": 0,
+            "mark": 0,
+            "measure": 0,
+            "getEntriesByType": false
+        },
+        "AudioContext": false,
+        "crossOriginIsolated": false,
+        "Int8Array": false,
+        "Uint8Array": false,
+        "Uint8ClampedArray": false,
+        "Int16Array": false,
+        "Uint16Array": false,
+        "Int32Array": false,
+        "Uint32Array": false,
+        "Float32Array": false,
+        "Float64Array": false,
+        "BigInt64Array": false,
+        "BigUint64Array": false,
+        "fetch": 0
     },
     "navigator": {
         "hardwareConcurrency": false,
@@ -34,6 +81,56 @@
     "Date": {
         "prototype": {
             "getTimezoneOffset": false
+        },
+        "now": 0
+    },
+    "HTMLElement": {
+        "prototype": {
+            "appendChild": 0,
+            "removeChild": 0,
+            "getBoundingClientRect": 0,
+            "innerHTML": 0,
+            "offsetWidth": 0,
+            "offsetHeight": 0,
+            "style": {
+                "position": 0,
+                "top": 0,
+                "left": 0,
+                "fontSize": 0,
+                "whiteSpace": 0,
+                "fontFamily": 0,
+                "visibility": 0,
+                "color": 0
+            }
+        }
+    },
+    "Node": {
+        "prototype": {
+            "textContent": 0
+        }
+    },
+    "document": {
+        "timeline": {
+            "currentTime": 0
+        },
+        "getElementsByTagName": false,
+        "createElement": false
+    },
+    "BaseAudioContext": {
+        "prototype": {
+            "createOscillator": false,
+            "createDynamicsCompressor": false
+        }
+    },
+    "OfflineAudioContext": {
+        "prototype": {
+            "startRendering": false
+        }
+    },
+    "OscillatorNode": {
+        "prototype": {
+            "frequency": false,
+            "type": false
         }
     }
 }

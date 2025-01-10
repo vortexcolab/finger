@@ -17,7 +17,7 @@
     "description": "Helping you get rid of trackers. This tool was developed by security experts after a deep research. This tools is ready to block the most trend and sofisticated trackers.",
     "version": "1",
     "action": {
-      "default_icon": "images/web_clearing.png",
+      "default_icon": "images/vortex-logo.png",
       "default_title": "Click me!"
     },
     "background": {
@@ -36,13 +36,21 @@
       {
         "matches": ["<all_urls>"],
         "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"],
+        "js": ["contentScripts/techniques.js"],
+        "world": "MAIN",
+        "run_at": "document_end",
+        "all_frames": true
+      },
+      {
+        "matches": ["<all_urls>"],
+        "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"],
         "js": ["contentScripts/message.js"],
         "run_at": "document_idle"
       }
     ],
     "web_accessible_resources": [
     {
-      "resources": ["config/config.json", "config/status.json"],
+      "resources": ["config/config.json", "config/status.json", "contentScripts/techniques.js"],
       "matches": ["<all_urls>"]
     }
     ],
