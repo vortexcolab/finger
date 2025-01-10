@@ -3,8 +3,6 @@
         "prototype": {
             "getContext": false,
             "toDataURL": false,
-            "rect": false,
-            "isPointInPath": false,
             "width": false,
             "height": false
         }
@@ -21,7 +19,19 @@
             "fillStyle": false,
             "font": false,
             "globalCompositeOperation": false,
-            "measureText": false
+            "measureText": false,
+            "rect": false,
+            "isPointInPath": false
+        }
+    },
+    "Screen": {
+        "prototype": {
+            "width": false,
+            "height": false,
+            "colorDepth": false,
+            "pixelDepth": false,
+            "availWidth": false,
+            "availHeight": false
         }
     },
     "window": {
@@ -31,14 +41,6 @@
         "outerHeight": false,
         "outerWidth": false,
         "devicePixelRatio": false,
-        "screen": {
-            "width": false,
-            "height": false,
-            "colorDepth": false,
-            "pixelDepth": false,
-            "availWidth": false,
-            "availHeight": false
-        },
         "localStorage": false,
         "requestAnimationFrame": false,
         "performance": {
@@ -62,13 +64,15 @@
         "BigUint64Array": false,
         "fetch": 0
     },
-    "navigator": {
-        "hardwareConcurrency": false,
-        "maxTouchPoints": false,
-        "deviceMemory": false,
-        "language": false,
-        "languages": false,
-        "getBattery": false
+    "Navigator": {
+        "prototype": {
+            "hardwareConcurrency": false,
+            "maxTouchPoints": false,
+            "deviceMemory": false,
+            "language": false,
+            "languages": false,
+            "getBattery": false
+        }
     },
     "BatteryManager": {
         "prototype": {
@@ -84,12 +88,16 @@
         },
         "now": 0
     },
+    "Element": {
+        "prototype": {
+            "innerHTML": 0
+        }
+    },
     "HTMLElement": {
         "prototype": {
             "appendChild": 0,
             "removeChild": 0,
             "getBoundingClientRect": 0,
-            "innerHTML": 0,
             "offsetWidth": 0,
             "offsetHeight": 0,
             "style": {
