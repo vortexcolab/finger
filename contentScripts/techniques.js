@@ -10,7 +10,7 @@ const techniques = [
                 methodName,
                 items = ["HTMLElement.prototype.appendChild",
                     "HTMLElement.prototype.removeChild",
-                    "HTMLElement.prototype.innerHTML",
+                    "Element.prototype.innerHTML",
                     "HTMLElement.prototype.offsetWidth", 
                     "HTMLElement.prototype.offsetHeight", 
                     "Node.prototype.textContent", 
@@ -40,7 +40,7 @@ const techniques = [
                 items2 = [
                     "HTMLElement.prototype.appendChild", 
                     "HTMLElement.prototype.removeChild", 
-                    "HTMLElement.prototype.innerHTML", 
+                    "Element.prototype.innerHTML", 
                     "HTMLElement.prototype.style.position", 
                     "HTMLElement.prototype.style.top", 
                     "HTMLElement.prototype.left", 
@@ -288,7 +288,7 @@ const techniques = [
                 path = [
                     "HTMLCanvasElement.prototype.getContext",
                     "HTMLCanvasElement.prototype.toDataURL",
-                    "HTMLCanvasElement.prototype.isPointInPath",
+                    "CanvasRenderingContext2D.prototype.isPointInPath",
                     "CanvasRenderingContext2D.prototype.beginPath",
                     "CanvasRenderingContext2D.prototype.arc",
                     "CanvasRenderingContext2D.prototype.closePath",
@@ -297,7 +297,7 @@ const techniques = [
                 rect = [
                     "HTMLCanvasElement.prototype.getContext",
                     "HTMLCanvasElement.prototype.toDataURL",
-                    "HTMLCanvasElement.prototype.rect",
+                    "CanvasRenderingContext2D.prototype.rect",
                     "CanvasRenderingContext2D.prototype.fillRect",
                     "CanvasRenderingContext2D.prototype.fillStyle",
                     "CanvasRenderingContext2D.prototype.globalCompositeOperation"

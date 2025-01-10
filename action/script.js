@@ -46,11 +46,15 @@ function updateBarometer(entropy, tags) {
 setInterval(() => {
   // Example: Simulate updates every second
   let currentEntropy = 0;
-  chrome.tabs.query({ highlighted: true}, function (tabs) {
+  /* 
+    O problema com esta implementação é que as janelas vão espelhar os dados da janela ativa e last Focused
+  */
+  chrome.tabs.query({ active: true, currentWindow: true}, function (tabs) {
     let current = tabs[0];
     let url = current.url;
     const hostname = new URL(url).hostname;
 
+    console.log(url);
     // Perform an action, such as sending a message to the content script
     chrome.tabs.sendMessage(current.id, { message: "Give me entropy", url: url }, (response) => {
       console.log("Response from content script:", response);

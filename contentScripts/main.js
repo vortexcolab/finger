@@ -13,6 +13,7 @@ window.addEventListener("message", (event) => {
   if (event.data.action === "entropyRequest" && event.ports[0]) {
     const port = event.ports[0];
     var data = calculateStatus();
+    console.log("BATEU", data);
     // Send entropy data back to the content script via the port
     port.postMessage(data);
   }
@@ -146,14 +147,21 @@ function addToProxy({ registerType, category, prototype, name, isConstructor, en
     }
   };
 
-  // Define a new property with a proxy on HTMLElement's prototype
-  Object.defineProperty(target, methodName, {
-    get() {
-      return new Proxy(originalDescriptor.get.call(this), proxyHandler);
-    },
-    configurable: true,
-    enumerable: true
-  });
+  if (typeof originalDescriptor === 'undefined') {
+    console.warn(`This ${target} hasn't property descriptor for ${attribute}`);
+  } else {
+    // Define a new property with a proxy on HTMLElement's prototype
+    Object.defineProperty(target, methodName, {
+      get() {
+        return (originalDescriptor.hasOwnProperty('get')) ? new Proxy(originalDescriptor.get.call(this), proxyHandler) : (typeof originalDescriptor.value === 'function') ? new Proxy(originalDescriptor.value.call(this), proxyHandler) : new Proxy(originalDescriptor.value, proxyHandler);
+      },
+      set() {
+        return (originalDescriptor.hasOwnProperty('set')) ? new Proxy(originalDescriptor.set.call(this), proxyHandler) : (typeof originalDescriptor.value === 'function') ? new Proxy(originalDescriptor.value.call(this), proxyHandler) : new Proxy(originalDescriptor.value, proxyHandler);
+      },
+      configurable: true,
+      enumerable: true
+    });
+  }
 }
 
 function interceptMethod({ registerType, category, prototype, name, isConstructor, entropy }) {
@@ -220,18 +228,22 @@ function interceptAttribute({ registerType, category, prototype, name, isConstru
 
   console.log(target, attributeName);
 
+  const hasDescriptor = typeof Object.getOwnPropertyDescriptor(target, attributeName) !== 'undefined';
+  if (!hasDescriptor) {
+    console.warn(`This ${target} hasn't property descriptor for ${attributeName}`);
+  }
   // Modify attribute with getter/setter
-  const originalValue = Object.getOwnPropertyDescriptor(target, attributeName);
+  const originalValue = (hasDescriptor) ? Object.getOwnPropertyDescriptor(target, attributeName): target[attributeName];
   Object.defineProperty(target, attributeName, {
       get() {
           console.log(`Intercepted attribute: ${name}`);
           updateRegisteredInterceptions(registerType, name);
-          return originalValue.get ? originalValue.get.call(this) : originalValue.value;
+          return (originalValue.hasOwnProperty('get')) ? originalValue.get.call(this) : (typeof originalValue.value === 'function') ? originalValue.call(this) : originalValue;
       },
       set(value) {
           console.log(`Modified attribute: ${name}, New value: ${value}`);
           updateRegisteredInterceptions(registerType, name);
-          if (originalValue.set) {
+          if (originalValue.hasOwnProperty('set')) {
             originalValue.set.call(this, value);
           } else {
             originalValue.value = value;
@@ -239,6 +251,7 @@ function interceptAttribute({ registerType, category, prototype, name, isConstru
       },
       configurable: true,
   });
+
 }
 
 function applyConfig(config) {

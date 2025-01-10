@@ -36,16 +36,16 @@
       {
         "matches": ["<all_urls>"],
         "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"],
-        "js": ["contentScripts/techniques.js"],
-        "world": "MAIN",
-        "run_at": "document_end",
-        "all_frames": true
+        "js": ["contentScripts/message.js"],
+        "run_at": "document_idle"
       },
       {
         "matches": ["<all_urls>"],
         "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"],
-        "js": ["contentScripts/message.js"],
-        "run_at": "document_idle"
+        "js": ["contentScripts/techniques.js"],
+        "world": "MAIN",
+        "run_at": "document_end",
+        "all_frames": true
       }
     ],
     "web_accessible_resources": [
