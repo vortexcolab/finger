@@ -1,4 +1,10 @@
 // Function to update the entropy bar
+/**
+ * Description placeholder
+ *
+ * @param {*} entropy 
+ * @param {*} tags 
+ */
 function updateBarometer(entropy, tags) {
   const indicator = document.getElementById('indicator');
   const entropyLevel = document.getElementById('entropy-level');

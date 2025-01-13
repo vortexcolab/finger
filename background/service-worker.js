@@ -1,4 +1,9 @@
 // Global variables
+/**
+ * Description placeholder
+ *
+ * @type {*}
+ */
 var activeTab;
 
 chrome.action.onClicked.addListener(
