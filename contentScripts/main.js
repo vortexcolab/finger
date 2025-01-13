@@ -1,8 +1,28 @@
 // The ID of the extension we want to talk to.
+/**
+ * Description placeholder
+ *
+ * @type {"fdggdpcbakcgdghnjgpiipcenllgmgpc"}
+ */
 const extensionId = "fdggdpcbakcgdghnjgpiipcenllgmgpc";
 // LOG LEVEL: 0 - low, 1 - medium, 2 - high, 4 - intensive
+/**
+ * Description placeholder
+ *
+ * @type {4}
+ */
 const logLevel = 4;
+/**
+ * Description placeholder
+ *
+ * @type {{}}
+ */
 const config = {};
+/**
+ * Description placeholder
+ *
+ * @type {{}}
+ */
 const fingerstatus = {};
 
 
@@ -20,6 +40,11 @@ window.addEventListener("message", (event) => {
 });
 
 
+/**
+ *
+ *
+ * @return {*} 
+ */
 function calculateStatus() {
 
   var tag =[];
@@ -88,16 +113,35 @@ function calculateStatus() {
 
 }
 
+/**
+ * Description placeholder
+ *
+ * @param {*} path 
+ * @returns {*} 
+ */
 function get(path) {
   if (!path) return fingerstatus;
   return path.split('.').reduce((obj, part) => (obj ? obj[part] : undefined), fingerstatus);
 }
 
+/**
+ * Description placeholder
+ *
+ * @param {*} path 
+ * @param {*} [initValue=window] 
+ * @returns {*} 
+ */
 function resolvePath(path, initValue = window) {
   if (!path) return window;
   return path.split('.').reduce((obj, part) => (obj ? obj[part] : undefined), initValue);
 }
 
+/**
+ * Description placeholder
+ *
+ * @param {*} registerType 
+ * @param {*} name 
+ */
 function updateRegisteredInterceptions(registerType, name) {
   // Get a reference to the nested value
   const parts = name.split('.');
@@ -112,6 +156,17 @@ function updateRegisteredInterceptions(registerType, name) {
 
 }
 
+/**
+ * Description placeholder
+ *
+ * @param {{ registerType: any; category: any; prototype: any; name: any; isConstructor: any; entropy: any; }} param0 
+ * @param {*} param0.registerType 
+ * @param {*} param0.category 
+ * @param {*} param0.prototype 
+ * @param {*} param0.name 
+ * @param {*} param0.isConstructor 
+ * @param {*} param0.entropy 
+ */
 function addToProxy({ registerType, category, prototype, name, isConstructor, entropy })  {
   const parts = name.split('.');
   const target = resolvePath(parts.slice(0, -2).join('.'));
@@ -164,6 +219,17 @@ function addToProxy({ registerType, category, prototype, name, isConstructor, en
   }
 }
 
+/**
+ * Description placeholder
+ *
+ * @param {{ registerType: any; category: any; prototype: any; name: any; isConstructor: any; entropy: any; }} param0 
+ * @param {*} param0.registerType 
+ * @param {*} param0.category 
+ * @param {*} param0.prototype 
+ * @param {*} param0.name 
+ * @param {*} param0.isConstructor 
+ * @param {*} param0.entropy 
+ */
 function interceptMethod({ registerType, category, prototype, name, isConstructor, entropy }) {
   const parts = name.split('.');
   const target = resolvePath(parts.slice(0, -1).join('.'));
@@ -216,6 +282,17 @@ function interceptMethod({ registerType, category, prototype, name, isConstructo
 
 */
 
+/**
+ * Description placeholder
+ *
+ * @param {{ registerType: any; category: any; prototype: any; name: any; isConstructor: any; entropy: any; }} param0 
+ * @param {*} param0.registerType 
+ * @param {*} param0.category 
+ * @param {*} param0.prototype 
+ * @param {*} param0.name 
+ * @param {*} param0.isConstructor 
+ * @param {*} param0.entropy 
+ */
 function interceptAttribute({ registerType, category, prototype, name, isConstructor, entropy }) {
   const parts = name.split('.');
   const target = resolvePath(parts.slice(0, -1).join('.'));
@@ -254,6 +331,11 @@ function interceptAttribute({ registerType, category, prototype, name, isConstru
 
 }
 
+/**
+ * Description placeholder
+ *
+ * @param {*} config 
+ */
 function applyConfig(config) {
   
   // Process methodOverride

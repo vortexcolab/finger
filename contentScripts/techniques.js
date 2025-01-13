@@ -1,3 +1,8 @@
+/**
+ * Description placeholder
+ *
+ * @type {{}}
+ */
 const techniques = [
     { name: "fontMetrics", type: "long-term",  
       traces: [
