@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: background/service-worker.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: background/service-worker.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// Global variables
+/**
+ * Description placeholder
+ *
+ * @type {*}
+ */
+var activeTab;
+
+chrome.action.onClicked.addListener(
+  async (tab) => {
+    chrome.action.setPopup(
+      {popup: "action/main.html"},
+      () => {
+        chrome.action.openPopup();
+      }
+    )
+    console.log("Browser action clicked!");
+
+    /*
+    // Perform an action, such as sending a message to the content script
+    chrome.tabs.sendMessage(tab.id, { message: "Give me entropy", url: tab.url }, (response) => {
+      console.log("Response from content script:", response);
+      let obj = {};
+      obj[tab.url] = JSON.stringify({entropy: response.data.entropy, tag: response.data.tag}); 
+      chrome.storage.local.set(obj);
+  });
+  */
+  }
+);
+
+chrome.runtime.onMessageExternal.addListener(                 // Listen for messages from the content script
+  async function(request, sender, sendResponse) {                   // Store captured function call data
+    
+    try {
+      console.log('Received:', request.action, request, sender.url); // LOG
+      
+      if (request.action === 'getConfig') {
+        const configUrl = chrome.runtime.getURL('config/config.json');
+        const statusUrl = chrome.runtime.getURL('config/status.json');
+
+        try {
+          // Fetch both files concurrently
+          const [configResponse, statusResponse] = await Promise.all([
+            fetch(configUrl),
+            fetch(statusUrl)
+          ]);
+
+          // Check for errors in both responses
+          if (!configResponse.ok) {
+            throw new Error(`Failed to fetch config: ${configResponse.statusText}`);
+          }
+          if (!statusResponse.ok) {
+            throw new Error(`Failed to fetch status: ${statusResponse.statusText}`);
+          }
+
+
+
+          // Parse JSON responses
+          const [config, status] = await Promise.all([
+            configResponse.json(),
+            statusResponse.json()
+          ]);
+          // Send the successful response
+          sendResponse({ success: true, config, status });
+        } catch (error) {
+          console.error('Error fetching configuration:', error);
+          sendResponse({ success: false, error: error.message });
+        }
+
+        // Indicate that the response will be sent asynchronously
+        return true;
+      }
+
+    } catch (error) {
+      console.error("Error handling action, ", error);
+      sendResponse({ success: false, error: error.message });
+    }
+});
+
+
+chrome.runtime.onInstalled.addListener(function() {
+
+  // clear local storage
+  chrome.storage.local.clear();
+
+});
+
+// Listen for tab refreshes
+chrome.webNavigation.onCommitted.addListener(function(details) {
+    
+  chrome.tabs.get(details.tabId, function (tab) {
+    if (!tab.url.startsWith('http')) {
+      return;
+    } else {
+      if (details.transitionType === 'reload') {
+        console.log('Tab refreshed:', details.tabId, details.windowId);
+        // clear local storage
+        chrome.storage.local.remove(tab.url).then((result) => { console.log("REMOVED") });
+      }
+    }
+  });
+});
+
+// Listen for tab closures
+chrome.tabs.onReplaced.addListener(function(tabId, removeInfo) {
+
+  chrome.tabs.get(tabId, function (tab) {
+    if (!tab.url.startsWith('http'))
+      return;
+    else {
+      chrome.storage.local.remove(tab.url).then((result) => { console.log("REMOVED") });
+    }  
+  });
+
+});
+
+
+
+
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#activeTab">activeTab</a></li><li><a href="global.html#addToProxy">addToProxy</a></li><li><a href="global.html#applyConfig">applyConfig</a></li><li><a href="global.html#calculateStatus">calculateStatus</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#extensionId">extensionId</a></li><li><a href="global.html#fingerstatus">fingerstatus</a></li><li><a href="global.html#interceptAttribute">interceptAttribute</a></li><li><a href="global.html#interceptMethod">interceptMethod</a></li><li><a href="global.html#logLevel">logLevel</a></li><li><a href="global.html#resolvePath">resolvePath</a></li><li><a href="global.html#techniques">techniques</a></li><li><a href="global.html#updateBarometer">updateBarometer</a></li><li><a href="global.html#updateRegisteredInterceptions">updateRegisteredInterceptions</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jan 13 2025 16:31:05 GMT+0000 (Western European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
