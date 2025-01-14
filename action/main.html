@@ -5,6 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entropy Barometer</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        button {
+            background: linear-gradient(45deg, #FFD700, #FFCC00, #FFB800);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+    </style>
 </head>
 <body>
     <div class="barometer-container">
@@ -15,7 +38,9 @@
         <br>
         <div class="label" id="tag"></div>
     </div>
-
+    <div>
+        <button onclick="openFeedBack()">Give your feedback</button>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>

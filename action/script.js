@@ -47,8 +47,6 @@ function updateBarometer(entropy, tags) {
   });
 }
 
-
-
 setInterval(() => {
   // Example: Simulate updates every second
   let currentEntropy = 0;
@@ -70,3 +68,12 @@ setInterval(() => {
     });
   });
 }, 1000);
+
+function openFeedback() {
+  chrome.action.setPopup(
+    {popup: "action/feedback.html"},
+    () => {
+      chrome.action.openPopup();
+    }
+  )
+}

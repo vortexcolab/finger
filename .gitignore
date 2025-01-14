@@ -1,2 +1,9 @@
 external_sources/
 contentScripts/scripts/
+.vscode/
+eslint.config.mjs
+jsdoc.json
+node_modules/
+package-lock.json
+package.json
+docs/
