@@ -13,9 +13,6 @@ function updateBarometer(entropy, tags) {
   // Ensure entropy is between 0 and 100
   const clampedEntropy = Math.min(Math.max(entropy, 0), 50);
 
-  // Update the width of the bar based on entropy
-  indicator.style.width = `${clampedEntropy*2}%`;
-
   // Add animation if entropy is above a threshold
   if (clampedEntropy > 35) {
       indicator.classList.add('animate');
@@ -25,17 +22,23 @@ function updateBarometer(entropy, tags) {
 
   if (clampedEntropy <= 10) {
     indicator.style.background = "linear-gradient(to right, green, greenyellow)";
-    entropyLevel.innerHTML = `<span class="secure-tag">Secure</span> Entropy: ${clampedEntropy} bits`;
+    entropyLevel.innerHTML = `<span class="secure-tag">Secure</span><span class="entropy-msg"> Entropy: ${clampedEntropy} bits</span>`;
   } else if (clampedEntropy <= 25) {
     indicator.style.background = "linear-gradient(to right, greenyellow, yellow, orange)"
-    entropyLevel.innerHTML = `<span class="alarm-tag">Alert</span> Entropy: ${clampedEntropy} bits`;
+    entropyLevel.innerHTML = `<span class="alarm-tag">Alert</span><span class="entropy-msg"> Entropy: ${clampedEntropy} bits</span`;
   } else if (clampedEntropy <= 30) {
     indicator.style.background = "linear-gradient(to right, orange, orangered, red)"
-    entropyLevel.innerHTML = `<span class="dangerous-tag">Fingerprinted</span> Entropy: ${clampedEntropy} bits`;
+    entropyLevel.innerHTML = `<span class="dangerous-tag">Fingerprinted</span><span class="entropy-msg"> Entropy: ${clampedEntropy} bits</span`;
   } else {
     indicator.style.background = "linear-gradient(to right, red, maroon)"
-    entropyLevel.innerHTML = `<span class="infernal-tag">Infernal</span> Entropy: ${clampedEntropy} bits`;
+    entropyLevel.innerHTML = `<span class="infernal-tag">Infernal</span><span class="entropy-msg"> Entropy: ${clampedEntropy} bits</span`;
   }
+
+
+  // Update the width of the bar based on entropy
+  indicator.style.width = `${clampedEntropy*2}%`;
+
+
   // Update the label
 
   tagIndicator.textContent = '';
@@ -45,9 +48,21 @@ function updateBarometer(entropy, tags) {
     tmpElem.textContent = tag
     tagIndicator.appendChild(tmpElem);
   });
+
+}
+
+function displayMainPage() {
+  document.getElementById("loader").style.display = "none";
+  document.getElementsByClassName("barometer-container")[0].style.display = "flex";
+  document.getElementsByTagName("header")[0].style.display = "flex";
+  document.getElementsByTagName("footer")[0].style.display = "flex";
+
+
 }
 
 setInterval(() => {
+
+
   // Example: Simulate updates every second
   let currentEntropy = 0;
   /* 
@@ -62,18 +77,14 @@ setInterval(() => {
     // Perform an action, such as sending a message to the content script
     chrome.tabs.sendMessage(current.id, { message: "Give me entropy", url: url }, (response) => {
       console.log("Response from content script:", response);
-
+      displayMainPage();
       updateBarometer(Math.round(Math.log2(response.data.entropy)), response.data.tag);
 
     });
   });
-}, 1000);
+}, 700);
 
-function openFeedback() {
-  chrome.action.setPopup(
-    {popup: "action/feedback.html"},
-    () => {
-      chrome.action.openPopup();
-    }
-  )
+// go to feedback template
+document.getElementById("feedbackBtn").onclick =  (event) => {
+  window.location.href = chrome.runtime.getURL("action/feedback.html");
 }

@@ -1,0 +1,36 @@
+/* Estilos do spinner */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+section > .spinner {
+    margin: auto;
+}
+/* Animação de rotação */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Texto de carregamento */
+.loading-text {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #333;
+    border-radius: 4px;
+    display: inline-block;  /* Makes the tag inline but still block-like */
+    font-family: Arial, sans-serif;  /* Simple and clean font */
+    padding: 2px 4px;  /* Padding around the text to mimic a button */
+    margin: 2px;  /* Space between tags */
+    text-transform: capitalize;  /* Capitalizes the first letter of each word */
+    font-weight: bold;  /* Bold text for more emphasis */
+    text-align: center;  /* Ensures the text is centered */
+    box-sizing: border-box;  /* Ensures padding doesn't affect the size */
+    cursor: default;  /* Default cursor to indicate it's not interactive */
+    transition: color 0.3s;  /* Smooth transition for hover effect */
+}

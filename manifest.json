@@ -17,7 +17,7 @@
     "description": "Helping you get rid of trackers. This tool was developed by security experts after a deep research. This tools is ready to block the most trend and sofisticated trackers.",
     "version": "1",
     "action": {
-      "default_icon": "images/vortex-logo.png",
+      "default_icon": "images/finger2.png",
       "default_title": "Click me!"
     },
     "background": {
