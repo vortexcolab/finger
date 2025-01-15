@@ -28,6 +28,28 @@ chrome.action.onClicked.addListener(
   }
 );
 
+
+chrome.runtime.onMessage.addListener(
+  (message, sender, sendResponse) => {
+    if (message?.task === "openPopup") {
+      console.log("1");
+      chrome.windows.update(message?.windowId, { focused: true }, function () {
+        console.log("2", message?.windowId);
+        // Abre o popup depois de garantir que a janela está focada
+        chrome.action.openPopup().then(
+          () => {
+            console.log("3");
+            sendResponse({success: true});
+          }
+        );
+      });
+
+
+    }
+  }
+);
+
+
 chrome.runtime.onMessageExternal.addListener(                 // Listen for messages from the content script
   async function(request, sender, sendResponse) {                   // Store captured function call data
     

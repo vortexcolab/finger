@@ -4,9 +4,19 @@ document.getElementById('feedbackForm').addEventListener('submit', function(even
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const comment = document.getElementById('comment').value;
-    const rating = document.getElementById('rating').value;
+
+    chrome.tabs.query({ active: true, currentWindow: true}, function (tabs) {
+        chrome.action.setPopup(
+          {popup: "action/feedback.html"}
+        );
     
-    if (name && email && comment && rating >= 1 && rating <= 5) {
+        alert("Window id: ", tabs[0].windowId, tabs[0].url);
+    
+
+        
+      });
+    
+    if (name && email && comment) {
         // Simula o envio de dados (poderia ser uma requisição para um servidor)
         document.getElementById('message').textContent = "Obrigado pelo seu feedback!";
         document.getElementById('message').style.color = 'green';
@@ -18,3 +28,7 @@ document.getElementById('feedbackForm').addEventListener('submit', function(even
         document.getElementById('message').style.color = 'red';
     }
 });
+
+document.getElementById("fallback").onclick = function() {
+  window.location.href = chrome.runtime.getURL("action/main.html");
+}
