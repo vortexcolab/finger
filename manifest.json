@@ -2,17 +2,7 @@
     "manifest_version": 3,
     "name": "Web Live Monitor by Vortex-Colab",
     "permissions": [
-      "storage",
-      "tabs",
-      "contentSettings",
-      "webRequest",
-      "declarativeNetRequestWithHostAccess",
-      "webNavigation",
       "activeTab"
-    ],
-    "host_permissions": [
-      "http://*/*",
-      "https://*/*"
     ],
     "description": "Helping you get rid of trackers. This tool was developed by security experts after a deep research. This tools is ready to block the most trend and sofisticated trackers.",
     "version": "1",
@@ -27,7 +17,6 @@
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
-        "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"],
         "js": ["contentScripts/main.js"],
         "world": "MAIN",
         "run_at": "document_start",
@@ -35,26 +24,19 @@
       },
       {
         "matches": ["<all_urls>"],
-        "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"],
         "js": ["contentScripts/message.js"],
         "run_at": "document_idle"
       },
       {
         "matches": ["<all_urls>"],
-        "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"],
         "js": ["contentScripts/techniques.js"],
         "world": "MAIN",
         "run_at": "document_end",
         "all_frames": true
       }
     ],
-    "web_accessible_resources": [
-    {
-      "resources": ["config/config.json", "config/status.json", "contentScripts/techniques.js"],
-      "matches": ["<all_urls>"]
-    }
-    ],
     "externally_connectable": {
+      "ids": [],
       "matches": ["<all_urls>"],
       "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"]
     }

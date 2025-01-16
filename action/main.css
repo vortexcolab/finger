@@ -4,6 +4,7 @@ body {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    flex-wrap: wrap;
     width: 300px;
     height: 400px;
     margin: 0 auto;
@@ -19,6 +20,7 @@ body {
     text-align: center;
     display: none;
     flex-wrap: wrap;
+    margin: auto;
 }
 
 
@@ -37,6 +39,7 @@ header {
 footer {
   display: none;
   flex-wrap: wrap;
+  margin:auto;
 }
 
 .barometer {

@@ -4,7 +4,6 @@
  *
  * @type {*}
  */
-var activeTab;
 
 chrome.action.onClicked.addListener(
   async (tab) => {
@@ -15,40 +14,8 @@ chrome.action.onClicked.addListener(
       }
     )
     console.log("Browser action clicked!");
-
-    /*
-    // Perform an action, such as sending a message to the content script
-    chrome.tabs.sendMessage(tab.id, { message: "Give me entropy", url: tab.url }, (response) => {
-      console.log("Response from content script:", response);
-      let obj = {};
-      obj[tab.url] = JSON.stringify({entropy: response.data.entropy, tag: response.data.tag}); 
-      chrome.storage.local.set(obj);
-  });
-  */
   }
 );
-
-
-chrome.runtime.onMessage.addListener(
-  (message, sender, sendResponse) => {
-    if (message?.task === "openPopup") {
-      console.log("1");
-      chrome.windows.update(message?.windowId, { focused: true }, function () {
-        console.log("2", message?.windowId);
-        // Abre o popup depois de garantir que a janela está focada
-        chrome.action.openPopup().then(
-          () => {
-            console.log("3");
-            sendResponse({success: true});
-          }
-        );
-      });
-
-
-    }
-  }
-);
-
 
 chrome.runtime.onMessageExternal.addListener(                 // Listen for messages from the content script
   async function(request, sender, sendResponse) {                   // Store captured function call data
@@ -75,8 +42,6 @@ chrome.runtime.onMessageExternal.addListener(                 // Listen for mess
             throw new Error(`Failed to fetch status: ${statusResponse.statusText}`);
           }
 
-
-
           // Parse JSON responses
           const [config, status] = await Promise.all([
             configResponse.json(),
@@ -98,44 +63,6 @@ chrome.runtime.onMessageExternal.addListener(                 // Listen for mess
       sendResponse({ success: false, error: error.message });
     }
 });
-
-
-chrome.runtime.onInstalled.addListener(function() {
-
-  // clear local storage
-  chrome.storage.local.clear();
-
-});
-
-// Listen for tab refreshes
-chrome.webNavigation.onCommitted.addListener(function(details) {
-    
-  chrome.tabs.get(details.tabId, function (tab) {
-    if (!tab.url.startsWith('http')) {
-      return;
-    } else {
-      if (details.transitionType === 'reload') {
-        console.log('Tab refreshed:', details.tabId, details.windowId);
-        // clear local storage
-        chrome.storage.local.remove(tab.url).then((result) => { console.log("REMOVED") });
-      }
-    }
-  });
-});
-
-// Listen for tab closures
-chrome.tabs.onReplaced.addListener(function(tabId, removeInfo) {
-
-  chrome.tabs.get(tabId, function (tab) {
-    if (!tab.url.startsWith('http'))
-      return;
-    else {
-      chrome.storage.local.remove(tab.url).then((result) => { console.log("REMOVED") });
-    }  
-  });
-
-});
-
 
 
 
