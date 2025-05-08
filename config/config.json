@@ -84,13 +84,6 @@
     { "category": ["pluginEnumeration"], "registerType": "presence", "type": "none", "prototype": false, "name": "window.onmessage", "isConstructor": false, "entropy": 0 }
   ],
   "proxy": [
-    { "category": ["fontMetrics", "fontEnumeration"], "registerType": "occurrence", "prototype": true, "name": "HTMLElement.prototype.style.position", "entropy": 0 },
-    { "category": ["fontMetrics", "fontEnumeration"], "registerType": "occurrence", "prototype": true, "name": "HTMLElement.prototype.style.top", "entropy": 0  },
-    { "category": ["fontMetrics", "fontEnumeration"], "registerType": "occurrence", "prototype": true, "name": "HTMLElement.prototype.style.left", "entropy": 0  },
-    { "category": ["fontMetrics"], "registerType": "occurrence", "prototype": true, "name": "HTMLElement.prototype.style.fontSize", "entropy": 0  },
-    { "category": ["fontMetrics"], "registerType": "occurrence", "prototype": true, "name": "HTMLElement.prototype.style.whiteSpace", "entropy": 0  },
-    { "category": ["fontMetrics", "fontEnumeration"], "registerType": "occurrence", "prototype": true, "name": "HTMLElement.prototype.style.fontFamily", "entropy": 0  },
-    { "category": ["fontMetrics"], "registerType": "occurrence", "prototype": true, "name": "HTMLElement.prototype.style.visibility", "entropy": 0  },
-    { "category": ["fontMetrics"], "registerType": "occurrence", "prototype": true, "name": "HTMLElement.prototype.style.color", "entropy": 0 }
+    { "category": ["fontMetrics", "fontEnumeration"], "registerType": "occurrence", "prototype": true, "name": "HTMLElement.prototype.style", "attributes": ["position", "top", "left", "fontSize", "whiteSpace", "fontFamily", "visibility", "color"], "entropy": 0 }
   ]
 }
