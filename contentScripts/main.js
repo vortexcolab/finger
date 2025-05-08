@@ -8,7 +8,7 @@ const extensionId = "fdggdpcbakcgdghnjgpiipcenllgmgpc";
  *
  * @type {number} 
  */
-const logLevel = 4;
+const logLevel = 1;
 /**
  *
  * @type {object} 
