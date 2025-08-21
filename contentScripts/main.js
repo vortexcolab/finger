@@ -2,7 +2,7 @@
  *
  * @type {string} 
  */
-const extensionId = "ndpiieakkdnodgdnpbbnpdggkfliemeg";
+const extensionId = "mmlnehmaeemkbacmlonfenhgjedjolfc";
 
 /**
  *
@@ -35,7 +35,6 @@ window.addEventListener("message", (event) => {
   if (event.data.action === "entropyRequest" && event.ports[0]) {
     const port = event.ports[0];
     var data = calculateStatus();
-    console.log("BATEU", data);
     port.postMessage(data);
   }
 });
@@ -149,7 +148,7 @@ function resolvePath(path, initValue = window) {
  * @param {string} registerType - It is consigured to receive 2 values ('ocurrences' or 'presence').
  * @param {string} name - Name of the symbol that FINGER observed the interception.
  */
-function updateRegisteredInterceptions(registerType, name) {
+function updateRegisteredInterceptions(registerType, name, prop) {
 
   // Parts have this format ["JSInterface", "Object", "property"]
   const parts = name.split('.');
@@ -159,9 +158,17 @@ function updateRegisteredInterceptions(registerType, name) {
   const property = parts[parts.length - 1];
 
   if (registerType == "presence") {
-    target[property] = true;
+    if (prop !== undefined) {
+      target[property][prop] = true;
+    } else {
+      target[property] = true;
+    }
   } else if (registerType == "occurrence") {
-    target[property]++;
+    if (prop !== undefined) {
+      target[property][prop]++;
+    } else {
+      target[property]++;
+    }
   }
 
 }
@@ -175,16 +182,14 @@ function updateRegisteredInterceptions(registerType, name) {
  * @param {String} params.name - The name of the expression that we want setup interceptions. 
  * @return {*}  
  */
-function addToProxy({ registerType, name })  {
+function addToProxy({ registerType, name, attributes })  {
 
   // Parts have this format ["JSInterface", "Object", "method"]
   const parts = name.split('.');
   // Target is a reference to an symbol in the fingerstatus object
-  const target = resolvePath(parts.slice(0, -2).join('.'));
+  const target = resolvePath(parts.slice(0, -1).join('.'));
   // Property is the method in that Target that we want to intercept
-  const property = parts[parts.length - 2];
-  // This is the runtime computed value that we can't intercpet directly but we can monitor changes througt proxy methodology.
-  const computedValue = parts[parts.length - 1];
+  const property = parts[parts.length - 1];
 
   if (!target || !(property in target)) {
     console.warn(`Cannot find method: ${name}`);
@@ -197,20 +202,15 @@ function addToProxy({ registerType, name })  {
   // Create a proxy handler for the style object
   const proxyHandler = {
     get(target, prop, receiver) {
-      (logLevel <= 1) ? console.log(`Accessing .${prop}`): null;
-      if (prop == computedValue)
-        updateRegisteredInterceptions(registerType, name);
-      // Use the target directly and bind the context if necessary
-      const value = Reflect.get(target, prop, receiver);
-      if (typeof value === 'function') {
-        return value.bind(target); // Ensure proper `this` context
-      }
-      return value;
+      (logLevel <= 1) ? console.log(`Accessing .${prop} and ${attributes}`): null;
+      if (attributes.includes(prop))
+        updateRegisteredInterceptions(registerType, name, prop);
+      return value = Reflect.get(target, prop, receiver);
     },
     set(target, prop, value) {
-      (logLevel <= 1) ? console.log(`Setting .${prop} to ${value}`): null;
-      if (prop == computedValue)
-        updateRegisteredInterceptions(registerType, name);
+      (logLevel <= 1) ? console.log(`Setting .${prop} to ${value} and ${attributes}`): null;
+      if (attributes.includes(prop))
+        updateRegisteredInterceptions(registerType, name, prop);
       return Reflect.set(target, prop, value);
     }
   };
@@ -221,10 +221,10 @@ function addToProxy({ registerType, name })  {
     // Define a new property with a proxy on HTMLElement's prototype
     Object.defineProperty(target, property, {
       get() {
-        return (originalDescriptor.hasOwnProperty('get')) ? new Proxy(originalDescriptor.get.call(this), proxyHandler) : (typeof originalDescriptor.value === 'function') ? new Proxy(originalDescriptor.value.call(this), proxyHandler) : new Proxy(originalDescriptor.value, proxyHandler);
+        return new Proxy(originalDescriptor, proxyHandler); 
       },
       set() {
-        return (originalDescriptor.hasOwnProperty('set')) ? new Proxy(originalDescriptor.set.call(this), proxyHandler) : (typeof originalDescriptor.value === 'function') ? new Proxy(originalDescriptor.value.call(this), proxyHandler) : new Proxy(originalDescriptor.value, proxyHandler);
+        return new Proxy(originalDescriptor, proxyHandler); 
       },
       configurable: true,
       enumerable: true
@@ -248,8 +248,6 @@ function interceptMethod({ registerType, prototype, name, isConstructor }) {
   const target = resolvePath(parts.slice(0, -1).join('.'));
   const methodName = parts[parts.length - 1];
 
-  console.log(`parts: ${parts}`);
-
   if (!target || !(methodName in target)) {
       console.warn(`Cannot find method: ${name}`);
       return;
@@ -261,7 +259,7 @@ function interceptMethod({ registerType, prototype, name, isConstructor }) {
   if (prototype) {
       Object.defineProperty(target, methodName, {
           value: function (...args) {
-              console.log(`Intercepted method: ${name}`);
+            (logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
               updateRegisteredInterceptions(registerType, name);
               return originalMethod.apply(this, args);
           },
@@ -271,7 +269,7 @@ function interceptMethod({ registerType, prototype, name, isConstructor }) {
   } else {
       // If not prototype, redefine on the instance
       target[methodName] = function (...args) {
-          console.log(`Intercepted method: ${name}`);
+        (logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
           updateRegisteredInterceptions(registerType, name);
           return (isConstructor) ? new originalMethod(...args): originalMethod.apply(this, args);
       };
@@ -314,7 +312,7 @@ function interceptAttribute({ registerType,  name }) {
       return;
   }
 
-  console.log(target, attributeName);
+  (logLevel <= 1) ? console.log(target, attributeName): null;
 
   const hasDescriptor = typeof Object.getOwnPropertyDescriptor(target, attributeName) !== 'undefined';
   if (!hasDescriptor) {
@@ -324,12 +322,12 @@ function interceptAttribute({ registerType,  name }) {
   const originalValue = (hasDescriptor) ? Object.getOwnPropertyDescriptor(target, attributeName): target[attributeName];
   Object.defineProperty(target, attributeName, {
       get() {
-          console.log(`Intercepted attribute: ${name}`);
+          (logLevel <= 1) ? console.log(`Intercepted attribute: ${name}`): null;
           updateRegisteredInterceptions(registerType, name);
           return (originalValue.hasOwnProperty('get')) ? originalValue.get.call(this) : (typeof originalValue.value === 'function') ? originalValue.call(this) : originalValue;
       },
       set(value) {
-          console.log(`Modified attribute: ${name}, New value: ${value}`);
+          (logLevel <= 1) ? console.log(`Modified attribute: ${name}, New value: ${value}`): null;
           updateRegisteredInterceptions(registerType, name);
           if (originalValue.hasOwnProperty('set')) {
             originalValue.set.call(this, value);
@@ -367,6 +365,7 @@ function applyConfig(config) {
   // Handle proxy (if needed later)
   if (config.proxy && config.proxy.length > 0) {
       for (const item of config.proxy) {
+        (logLevel <= 1) ? console.log("Proxy: ", item): null;
         addToProxy(item);
       }
   }
