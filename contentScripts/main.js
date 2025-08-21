@@ -2,7 +2,7 @@
  *
  * @type {string} 
  */
-const extensionId = "fdggdpcbakcgdghnjgpiipcenllgmgpc";
+const extensionId = "ndpiieakkdnodgdnpbbnpdggkfliemeg";
 
 /**
  *
