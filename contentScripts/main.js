@@ -205,7 +205,11 @@ function addToProxy({ registerType, name, attributes })  {
       (logLevel <= 1) ? console.log(`Accessing .${prop} and ${attributes}`): null;
       if (attributes.includes(prop))
         updateRegisteredInterceptions(registerType, name, prop);
-      return value = Reflect.get(target, prop, receiver);
+      if (typeof target[prop] === 'function') {
+        return target[prop].bind(target); // Ensure proper `this` context
+      }
+      return Reflect.get(target, prop, receiver);
+
     },
     set(target, prop, value) {
       (logLevel <= 1) ? console.log(`Setting .${prop} to ${value} and ${attributes}`): null;
@@ -221,10 +225,8 @@ function addToProxy({ registerType, name, attributes })  {
     // Define a new property with a proxy on HTMLElement's prototype
     Object.defineProperty(target, property, {
       get() {
-        return new Proxy(originalDescriptor, proxyHandler); 
-      },
-      set() {
-        return new Proxy(originalDescriptor, proxyHandler); 
+        const attr = originalDescriptor.get.call(this);
+        return new Proxy(attr, proxyHandler); 
       },
       configurable: true,
       enumerable: true
