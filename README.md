@@ -23,8 +23,6 @@ FINGER is a web extension conceived for Google Chrome that's monitor user privac
 3. The extension notifies the user via a popup.
 4. ~~The user can interact with the popup to view details of the fingerprinting attempts.~~ [UNDER DEVELOPMENTS]
 
-![Architecture Diagram](images/implm2-1.png)
-
 ## File Structure
 
 - **manifest.json**: The main configuration file for the extension, defining permissions, scripts to be injected, and other metadata.
