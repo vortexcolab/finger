@@ -1,10 +1,10 @@
 # FINGER - Fingerprint Interception and Notification for Guarding User Rights
 
-FINGER is a web extension for Google Chrome that's monitor user privacy on the web. It may detects fingerprinting activities, a method used to track users through unique browser and system characteristics.
+FINGER is a web extension conceived for Google Chrome that's monitor user privacy on the web. It detects fingerprinting activities, a method used to track users through unique browser and system characteristics.
 
 ## Features
 
-- **Script interception**: The extension injects content scripts that modify JavaScript methods to intercept executions related to web browser fingerprinting.
+- **Script interception**: The extension injects content scripts that modify JavaScript methods to intercept executions associated with browser fingerprinting techniques.
 - **Fingerprinting detection**: Monitors various fingerprinting techniques, including:
   - Canvas API
   - Font Metrics
@@ -21,7 +21,7 @@ FINGER is a web extension for Google Chrome that's monitor user privacy on the w
 1. When a page is loaded, the `main.js`, `message.js`, and `techniques.js` files are injected as content scripts into all webpages. These scripts apply modifications without altering the browser’s core functionalities. Techniques such as method overriding, object proxies, and property modifications are used in a surgical manner to monitor specific thresholds that may indicate fingerprinting activity.
 2. Detected fingerprinting events are sent to the popup interface, which serves as the front end of the extension.
 3. The extension notifies the user via a popup.
-~~4. The user can interact with the popup to view details of the fingerprinting attempts.~~ [UNDER DEVELOPMENTS]
+4. ~~The user can interact with the popup to view details of the fingerprinting attempts.~~ [UNDER DEVELOPMENTS]
 
 ![Architecture Diagram](images/implm2-1.png)
 
