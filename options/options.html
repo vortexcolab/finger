@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Extension Options</title>
+    </head>
+    <body>
+        <h1>Anti-Fingerprint Settings</h1>
+        <label>
+            <input type="checkbox" id="fingerprintToggle">
+            Block Fingerprinting
+        </label>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const toggle = document.getElementById("fingerprintToggle");
+
+                chrome.storage.local.get("blockFingerprinting", (data) => {
+                    toggle.checked = data.blockFingerprinting || false;
+                });
+
+                toggle.addEventListener("change", () => {
+                    chrome.storage.local.set({ blockFingerprinting: toggle.checked });
+                });
+            });
+        </script>
+    </body>
+</html>
