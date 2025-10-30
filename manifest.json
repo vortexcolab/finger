@@ -2,7 +2,8 @@
     "manifest_version": 3,
     "name": "Web Live Monitor by Vortex-Colab",
     "permissions": [
-      "activeTab"
+      "activeTab",
+      "storage"
     ],
     "description": "Helping you get rid of trackers. This tool was developed by security experts after a deep research. This tools is ready to block the most trend and sofisticated trackers.",
     "version": "1",
@@ -12,7 +13,7 @@
     },
     "options_ui": {
       "page": "options/options.html",
-      "open_in_tab": true
+      "open_in_tab": false
     },
     "background": {
       "service_worker": "background/service-worker.js",
