@@ -207,9 +207,9 @@ function addToProxy({ registerType, name, attributes }, blockFingerprinting)  {
     get(target, prop, receiver) {
       (logLevel <= 1) ? console.log(`Accessing .${prop} and ${attributes}`): null;
       if (attributes.includes(prop))
-        updateRegisteredInterceptions(registerType, name, prop);
+        (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name, prop);
       if (typeof target[prop] === 'function') {
-        return target[prop].bind(target); // Ensure proper `this` context
+        return (blockFingerprinting) ?  undefined : target[prop].bind(target); // Ensure proper `this` context
       }
       return (blockFingerprinting) ?  undefined : Reflect.get(target, prop, receiver);
 
@@ -217,7 +217,7 @@ function addToProxy({ registerType, name, attributes }, blockFingerprinting)  {
     set(target, prop, value) {
       (logLevel <= 1) ? console.log(`Setting .${prop} to ${value} and ${attributes}`): null;
       if (attributes.includes(prop))
-        updateRegisteredInterceptions(registerType, name, prop);
+        (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name, prop);
       return Reflect.set(target, prop, value);
     }
   };
@@ -265,7 +265,7 @@ function interceptMethod({ registerType, prototype, name, isConstructor }, block
       Object.defineProperty(target, methodName, {
           value: function (...args) {
             (logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
-              updateRegisteredInterceptions(registerType, name);
+              (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
               return (blockFingerprinting) ? undefined : originalMethod.apply(this, args);
           },
           writable: true,
@@ -275,7 +275,7 @@ function interceptMethod({ registerType, prototype, name, isConstructor }, block
       // If not prototype, redefine on the instance
       target[methodName] = function (...args) {
         (logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
-          updateRegisteredInterceptions(registerType, name);
+          (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
           return (blockFingerprinting) ? undefined : (isConstructor) ? new originalMethod(...args): originalMethod.apply(this, args);
       };
   }
@@ -328,12 +328,12 @@ function interceptAttribute({ registerType,  name }, blockFingerprinting) {
   Object.defineProperty(target, attributeName, {
       get() {
           (logLevel <= 1) ? console.log(`Intercepted attribute: ${name}`): null;
-          updateRegisteredInterceptions(registerType, name);
+          (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
           return (blockFingerprinting) ? undefined : (originalValue.hasOwnProperty('get')) ? originalValue.get.call(this) : (typeof originalValue.value === 'function') ? originalValue.call(this) : originalValue;
       },
       set(value) {
           (logLevel <= 1) ? console.log(`Modified attribute: ${name}, New value: ${value}`): null;
-          updateRegisteredInterceptions(registerType, name);
+          (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
           if (originalValue.hasOwnProperty('set')) {
             originalValue.set.call(this, value);
           } else {
