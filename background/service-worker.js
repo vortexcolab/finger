@@ -43,12 +43,13 @@ chrome.runtime.onMessageExternal.addListener(                 // Listen for mess
           }
 
           // Parse JSON responses
-          const [config, status] = await Promise.all([
+          const [config, status, blockFingerprinting] = await Promise.all([
             configResponse.json(),
-            statusResponse.json()
+            statusResponse.json(),
+            chrome.storage.local.get('blockFingerprinting').then(data => data.blockFingerprinting || false) 
           ]);
           // Send the successful response
-          sendResponse({ success: true, config, status });
+          sendResponse({ success: true, config, status, blockFingerprinting });
         } catch (error) {
           console.error('Error fetching configuration:', error);
           sendResponse({ success: false, error: error.message });

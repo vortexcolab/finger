@@ -31,11 +31,14 @@ const fingerstatus = {};
  * @date 13/01/2025
  * 
 */
+
+// Listen for messages from the webpage
 window.addEventListener("message", (event) => {
   if (event.data.action === "entropyRequest" && event.ports[0]) {
-    const port = event.ports[0];
-    var data = calculateStatus();
-    port.postMessage(data);
+      const port = event.ports[0];
+      var data = calculateStatus();
+      port.postMessage(data);
+    
   }
 });
 
@@ -182,7 +185,7 @@ function updateRegisteredInterceptions(registerType, name, prop) {
  * @param {String} params.name - The name of the expression that we want setup interceptions. 
  * @return {*}  
  */
-function addToProxy({ registerType, name, attributes })  {
+function addToProxy({ registerType, name, attributes }, blockFingerprinting)  {
 
   // Parts have this format ["JSInterface", "Object", "method"]
   const parts = name.split('.');
@@ -208,7 +211,7 @@ function addToProxy({ registerType, name, attributes })  {
       if (typeof target[prop] === 'function') {
         return target[prop].bind(target); // Ensure proper `this` context
       }
-      return Reflect.get(target, prop, receiver);
+      return (blockFingerprinting) ?  undefined : Reflect.get(target, prop, receiver);
 
     },
     set(target, prop, value) {
@@ -245,7 +248,7 @@ function addToProxy({ registerType, name, attributes })  {
  * @param {String} params.isConstructor - True if is a constructor and False if isn't.
  * @return {*}  
  */
-function interceptMethod({ registerType, prototype, name, isConstructor }) {
+function interceptMethod({ registerType, prototype, name, isConstructor }, blockFingerprinting) {
   const parts = name.split('.');
   const target = resolvePath(parts.slice(0, -1).join('.'));
   const methodName = parts[parts.length - 1];
@@ -263,7 +266,7 @@ function interceptMethod({ registerType, prototype, name, isConstructor }) {
           value: function (...args) {
             (logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
               updateRegisteredInterceptions(registerType, name);
-              return originalMethod.apply(this, args);
+              return (blockFingerprinting) ? undefined : originalMethod.apply(this, args);
           },
           writable: true,
           configurable: true,
@@ -273,15 +276,15 @@ function interceptMethod({ registerType, prototype, name, isConstructor }) {
       target[methodName] = function (...args) {
         (logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
           updateRegisteredInterceptions(registerType, name);
-          return (isConstructor) ? new originalMethod(...args): originalMethod.apply(this, args);
+          return (blockFingerprinting) ? undefined : (isConstructor) ? new originalMethod(...args): originalMethod.apply(this, args);
       };
   }
 }
 
-/*
-  Info: Você está tentando acessar originalValue.value, mas Object.getOwnPropertyDescriptor retorna um descritor de propriedade, que possui as chaves value, get, set, etc.
-   Se o descritor não tiver um get ou set definido, a propriedade value é usada.
-
+/**
+ * Port-based communication: use runtime.connect() without hardcoding extension id
+ */
+/**
   Explicação(colocar no commit):
 
   1. Verificação do prototype:
@@ -304,7 +307,7 @@ function interceptMethod({ registerType, prototype, name, isConstructor }) {
  * @param {String} params.name - The name of the expression that we want setup interceptions. 
  * @return {*}  
  */
-function interceptAttribute({ registerType,  name }) {
+function interceptAttribute({ registerType,  name }, blockFingerprinting) {
   const parts = name.split('.');
   const target = resolvePath(parts.slice(0, -1).join('.'));
   const attributeName = parts[parts.length - 1];
@@ -326,7 +329,7 @@ function interceptAttribute({ registerType,  name }) {
       get() {
           (logLevel <= 1) ? console.log(`Intercepted attribute: ${name}`): null;
           updateRegisteredInterceptions(registerType, name);
-          return (originalValue.hasOwnProperty('get')) ? originalValue.get.call(this) : (typeof originalValue.value === 'function') ? originalValue.call(this) : originalValue;
+          return (blockFingerprinting) ? undefined : (originalValue.hasOwnProperty('get')) ? originalValue.get.call(this) : (typeof originalValue.value === 'function') ? originalValue.call(this) : originalValue;
       },
       set(value) {
           (logLevel <= 1) ? console.log(`Modified attribute: ${name}, New value: ${value}`): null;
@@ -348,19 +351,19 @@ function interceptAttribute({ registerType,  name }) {
  * @date 13/01/2025
  * @param {*} config - Contents of the file "/config/config.json"
  */
-function applyConfig(config) {
+function applyConfig(config, blockFingerprinting) {
   
   // Process methodOverride
   if (config.methodOverride) {
       for (const item of config.methodOverride) {
-        interceptMethod(item);
+        interceptMethod(item, blockFingerprinting);
       }
   }
 
   // Process attributeModification
   if (config.attributeModification) {
       for (const item of config.attributeModification) {
-        interceptAttribute(item);
+        interceptAttribute(item, blockFingerprinting);
       }
   }
 
@@ -368,18 +371,20 @@ function applyConfig(config) {
   if (config.proxy && config.proxy.length > 0) {
       for (const item of config.proxy) {
         (logLevel <= 1) ? console.log("Proxy: ", item): null;
-        addToProxy(item);
+        addToProxy(item, blockFingerprinting);
       }
   }
 }
 
 (function () {
 
+  // Get initial config (one-shot message to background)
   chrome.runtime.sendMessage(extensionId, { action: 'getConfig' }, response => {
     if (response && response.success) {
       Object.assign(config, response.config);
       Object.assign(fingerstatus, response.status);
-      applyConfig(config);
+      console.log(response.blockFingerprinting);
+      applyConfig(config, response.blockFingerprinting);
       console.log("Configuration applied successfully.");
     } else {
       console.error("Error fetching config:", response ? response.error : "Unknown error");
