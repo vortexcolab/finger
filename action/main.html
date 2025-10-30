@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entropy Barometer</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="loading.css">
+    <style>
+        #logo {
+            margin: auto;
+            border-radius: 50%;
+        }
+
+        button {
+            background: linear-gradient(45deg, #FFD700, #FFCC00, #FFB800);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: Arial, sans-serif;  /* Simple and clean font */
+            text-transform: capitalize;  /* Capitalizes the first letter of each word */
+            font-weight: bold;  /* Bold text for more emphasis */
+            text-align: center;  /* Ensures the text is centered */
+            box-sizing: border-box;  /* Ensures padding doesn't affect the size */
+            cursor: default;  /* Default cursor to indicate it's not interactive */
+            transition: color 0.3s;  /* Smooth transition for hover effect */
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img id="logo" width="100" height="100" src="../images/finger2.png">
+    </header>
+    <!-- Spinner de carregamento -->
+    <section id="loader">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading...</p>
+    </section>
+    <section class="barometer-container">
+        <div class="barometer">
+            <div class="indicator" id="indicator"></div>
+        </div>
+        <div class="label" id="entropy-level"><span class="secure-tag">Secure</span><span class="entropy-msg"> Entropy: 0 bits</span></div>
+        <br>
+        <div class="label" id="tag"></div>
+    </section>
+    <br>
+    <br>
+    <footer>
+        <button id="feedbackBtn">Send your feedback</button>
+    </footer>
+    <a href="#" id="go-to-options" class="options-link">Go to options</a>
+    <script src="main.js"></script>
+</body>
+</html>
