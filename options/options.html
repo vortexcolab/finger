@@ -12,7 +12,7 @@
     .settings-list {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 15px;
       max-width: 300px;
       margin: 0 auto;
     }
@@ -21,8 +21,27 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #fff;
+      background: grey;
       padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .settings-list-chiledren {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 300px;
+      margin: 0 auto;
+      margin-left: 10px;
+    }
+
+    .setting-item-children {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 12px 16px 12px 32px;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
@@ -30,6 +49,10 @@
     .setting-label {
       font-size: 14px;
       color: #333;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      max-width: 70%;
     }
 
     .switch {
@@ -83,13 +106,130 @@
     <div><b>*</b><u style="color:red">This change will close the Options UI and reload the extension.</u> When <b>enabled</b> some sites may nor work properly.</div>
     <div class="setting-item">
 
-      <span class="setting-label">Block Fingerprinting</span>
+      <span class="setting-label" title="Block All Fingerprinting"><b>Block All Fingerprinting</b></span>
       <label class="switch">
         <input type="checkbox" id="fingerprintToggle">
         <span class="slider"></span>
       </label>
     </div>
+    <div class="settings-list-chiledren">
+      <div class="setting-item-children">
 
+        <span class="setting-label" title="Block Screen Fingerprinting">Block Screen Fingerprinting</span>
+        <label class="switch">
+          <input type="checkbox" class="dependent" id="screenFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Canvas Fingerprinting">Block Canvas Fingerprinting</span>
+        <label class="switch">
+          <input type="checkbox" class="dependent" id="canvasFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Audio Fingerprinting">Block Audio Fingerprinting</span>
+        <label class="switch">
+          <input type="checkbox" class="dependent" id="audioFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Font Metrics Fingerprinting">Block Font Metrics Fingerprinting</span>
+        <label class="switch">
+          <input type="checkbox" class="dependent" id="fontMetricsFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Font Enumeration Fingerprinting">Block Font Enumeration Fingerprinting</span>
+        <label class="switch">
+          <input type="checkbox" class="dependent" id="fontEnumerationFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Plugin Enumeration Fingerprinting">Block Plugin Enumeration Fingerprinting</span>
+        <label class="switch">
+          <input type="checkbox" class="dependent" id="pluginEnumerationFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Bechmarking Fingerprinting">Block Benchmarking Fingerprinting</span>
+        <label class="switch">  
+          <input type="checkbox" class="dependent" id="benchmarkFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Hardware Fingerprinting">Block Hardware Fingerprinting</span>
+        <label class="switch">
+          <input type="checkbox" class="dependent" id="hardwareFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Memory Fingerprinting">Block Memory Fingerprinting</span>
+        <label class="switch">  
+          <input type="checkbox" class="dependent" id="memoryFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Battery Fingerprinting">Block Battery Fingerprinting</span>
+        <label class="switch">
+          <input type="checkbox" class="dependent" id="batteryFingerprintToggle">
+          <span class="slider"> </span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Cache Fingerprinting">Block Cache Fingerprinting</span>
+        <label class="switch">
+          <input type="checkbox" class="dependent" id="cacheFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item-children">
+
+        <span class="setting-label" title="Block Other Fingerprinting">Block Other Fingerprinting</span>
+        <label class="switch">
+          <input type="checkbox" class="dependent" id="otherFingerprintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+    </div>   
+    <div class="setting-item">
+      <span class="setting-label" title="Enable Detailed Logging (for debugging)" ><b>Enable Detailed Logging (for debugging)</b></span>
+      <label class="switch">
+        <input type="checkbox" id="loggingToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    
     <!-- Add more toggle items here -->
     <!-- <div class="setting-item">
       <span class="setting-label">Block Tracking Scripts</span>
@@ -98,8 +238,8 @@
         <span class="slider"></span>
       </label>
     </div> -->
-  </div>
 
+  </div>
   <script src="options.js"></script>
 </body>
 </html>
