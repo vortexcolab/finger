@@ -176,6 +176,53 @@ function updateRegisteredInterceptions(registerType, name, prop) {
 
 }
 
+// category is a list of strings representing the categories configured in /config/config.json
+/**
+ * @description Check if a given category is blocked based on the current toggles.
+ * 
+ * @author Pedro Correia
+ * @date 13/01/2025
+ * @param {string} category - The category to check.
+ *  
+ * @param {Object} toggles - The current state of the toggles from storage.
+ * @return {boolean} - True if the category is blocked, false otherwise.
+ */
+
+function isThisCategoryBlocked(category, toggles) {
+
+  category = Array.isArray(category) ? category : [category];
+
+  for (const cat of category) {
+    switch (cat) {
+      case "fingerprinting":
+        if (toggles.blockFingerprinting) return true;
+        break; 
+      case "audioFingerprinting":
+        if (toggles.blockAudioFingerprinting) return true;
+        break;
+      case "screenFingerprinting":
+        if (toggles.blockScreenFingerprinting) return true;
+        break;
+      case "canvasFingerprinting":
+        if (toggles.blockCanvasFingerprinting) return true;
+        break;
+      case "webGLFingerprinting":
+        if (toggles.blockWebGLFingerprinting) return true;
+        break; 
+      case "fontFingerprinting":
+        if (toggles.blockFontFingerprinting) return true;
+        break;
+      case "timezoneFingerprinting":
+        if (toggles.blockTimezoneFingerprinting) return true;
+        break;
+      default:
+        console.warn(`Unknown category: ${cat}`);
+    }
+  }
+
+  return false;
+}
+
 /**
  * @description This function initialized the interceptions to make trought proxy methodology. These intructions was configured previously in '/confi/config.json'.
  * @author Pedro Correia
@@ -185,7 +232,7 @@ function updateRegisteredInterceptions(registerType, name, prop) {
  * @param {String} params.name - The name of the expression that we want setup interceptions. 
  * @return {*}  
  */
-function addToProxy({ registerType, name, attributes }, blockFingerprinting)  {
+function addToProxy({ category, registerType, name, attributes }, toggles)  {
 
   // Parts have this format ["JSInterface", "Object", "method"]
   const parts = name.split('.');
@@ -193,6 +240,8 @@ function addToProxy({ registerType, name, attributes }, blockFingerprinting)  {
   const target = resolvePath(parts.slice(0, -1).join('.'));
   // Property is the method in that Target that we want to intercept
   const property = parts[parts.length - 1];
+  // is this category blocked?
+  const blockFingerprinting = category.some(cat => toggles[cat]) || toggles['blockFingerprinting'];
 
   if (!target || !(property in target)) {
     console.warn(`Cannot find method: ${name}`);
@@ -237,6 +286,8 @@ function addToProxy({ registerType, name, attributes }, blockFingerprinting)  {
   }
 }
 
+
+
 /**
  * @description This function initialized the interceptions to make trought method override methodology. These intructions was configured previously in '/confi/config.json'.
  * @author Pedro Correia
@@ -248,10 +299,12 @@ function addToProxy({ registerType, name, attributes }, blockFingerprinting)  {
  * @param {String} params.isConstructor - True if is a constructor and False if isn't.
  * @return {*}  
  */
-function interceptMethod({ registerType, prototype, name, isConstructor }, blockFingerprinting) {
+function interceptMethod({ category, registerType, prototype, name, isConstructor }, toggles) {
   const parts = name.split('.');
   const target = resolvePath(parts.slice(0, -1).join('.'));
   const methodName = parts[parts.length - 1];
+    // is this category blocked?
+  const blockFingerprinting = category.some(cat => toggles[cat]) || toggles['blockFingerprinting'];
 
   if (!target || !(methodName in target)) {
       console.warn(`Cannot find method: ${name}`);
@@ -307,10 +360,12 @@ function interceptMethod({ registerType, prototype, name, isConstructor }, block
  * @param {String} params.name - The name of the expression that we want setup interceptions. 
  * @return {*}  
  */
-function interceptAttribute({ registerType,  name }, blockFingerprinting) {
+function interceptAttribute({ category, registerType,  name }, toggles) {
   const parts = name.split('.');
   const target = resolvePath(parts.slice(0, -1).join('.'));
   const attributeName = parts[parts.length - 1];
+  // is this category blocked?
+  const blockFingerprinting = category.some(cat => toggles[cat]) || toggles['blockFingerprinting'];
 
   if (!target || !(attributeName in target)) {
       console.warn(`Cannot find attribute: ${name}`);
@@ -345,25 +400,29 @@ function interceptAttribute({ registerType,  name }, blockFingerprinting) {
 
 }
 
+
+
 /**
  * @description Apply the initial configurations. 
  * @author Pedro Correia
  * @date 13/01/2025
  * @param {*} config - Contents of the file "/config/config.json"
  */
-function applyConfig(config, blockFingerprinting) {
+async function applyConfig(config, toggles) {
+
+  console.log("Toggles from storage: ", toggles);
   
   // Process methodOverride
   if (config.methodOverride) {
       for (const item of config.methodOverride) {
-        interceptMethod(item, blockFingerprinting);
+        interceptMethod(item, toggles);
       }
   }
 
   // Process attributeModification
   if (config.attributeModification) {
       for (const item of config.attributeModification) {
-        interceptAttribute(item, blockFingerprinting);
+        interceptAttribute(item, toggles);
       }
   }
 
@@ -371,7 +430,7 @@ function applyConfig(config, blockFingerprinting) {
   if (config.proxy && config.proxy.length > 0) {
       for (const item of config.proxy) {
         (logLevel <= 1) ? console.log("Proxy: ", item): null;
-        addToProxy(item, blockFingerprinting);
+        addToProxy(item, toggles);
       }
   }
 }
@@ -383,8 +442,7 @@ function applyConfig(config, blockFingerprinting) {
     if (response && response.success) {
       Object.assign(config, response.config);
       Object.assign(fingerstatus, response.status);
-      console.log(response.blockFingerprinting);
-      applyConfig(config, response.blockFingerprinting);
+      applyConfig(config, response.toggles);
       console.log("Configuration applied successfully.");
     } else {
       console.error("Error fetching config:", response ? response.error : "Unknown error");
