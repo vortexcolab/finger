@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Web Live Monitor by Vortex-Colab",
+    "name": "FINGER",
     "permissions": [
       "activeTab",
       "storage"
