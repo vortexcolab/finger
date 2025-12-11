@@ -15,20 +15,26 @@
         button {
             background: linear-gradient(45deg, #FFD700, #FFCC00, #FFB800);
             color: white;
+            cursor: not-allowed;
             border: none;
             padding: 10px 20px;
             font-size: 16px;
-            cursor: pointer;
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s, box-shadow 0.2s;
-            font-family: Arial, sans-serif;  /* Simple and clean font */
-            text-transform: capitalize;  /* Capitalizes the first letter of each word */
-            font-weight: bold;  /* Bold text for more emphasis */
-            text-align: center;  /* Ensures the text is centered */
-            box-sizing: border-box;  /* Ensures padding doesn't affect the size */
-            cursor: default;  /* Default cursor to indicate it's not interactive */
-            transition: color 0.3s;  /* Smooth transition for hover effect */
+            font-family: Arial, sans-serif;
+            text-transform: capitalize;
+            font-weight: bold;
+            text-align: center;
+            box-sizing: border-box;
+            transition: color 0.3s;
+        }
+
+
+        button[disabled]:hover {
+            cursor: not-allowed !important;
+            transform: none; /* Prevent translateY on disabled */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Keep original shadow */
         }
 
         button:hover {
@@ -41,6 +47,7 @@
             transform: translateY(2px);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
+
     </style>
 </head>
 <body>
@@ -63,7 +70,7 @@
     <br>
     <br>
     <footer>
-        <button id="feedbackBtn">Send your feedback</button>
+        <button disabled id="feedbackBtn" title="This feature will be developed in next versions">Send your feedback</button>
     </footer>
     <a href="#" id="go-to-options" class="options-link">Go to options</a>
     <script src="main.js"></script>
