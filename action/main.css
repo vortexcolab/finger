@@ -194,6 +194,7 @@ footer {
   }
 
   button[disabled]:hover::after {
-    content: attr(title);
+    background-color: lightgray;
+    cursor: not-allowed;
     /* Custom tooltip styling if needed */
 }
