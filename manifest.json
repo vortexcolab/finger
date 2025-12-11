@@ -42,7 +42,6 @@
     ],
     "externally_connectable": {
       "ids": [],
-      "matches": ["<all_urls>"],
-      "exclude_matches": ["*://*.microsoft.com/*", "*://*.teams.microsoft.com/*", "*://microsoft.com/*"]
+      "matches": ["<all_urls>"]
     }
   }
