@@ -9,3 +9,4 @@ package.json
 docs/
 browser_plugin.code-workspace
 .DS_Store
+action/feedback.*
