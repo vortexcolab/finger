@@ -14,7 +14,7 @@ FINGER is a web extension conceived for Google Chrome that's monitor user privac
   - Cache-Based Fingerprinting
   - Detection of hardware and browser properties.
 - **User alerts**: When fingerprinting attempts are detected, the extension notifies the user through a popup interface.
-- ~~**Dynamic blocking**: The extension allows users to block tracking attempts via redirection using dynamic rules.~~ [UNDER DEVELOPMENTS]
+- **Dynamic blocking**: The extension allows users to block tracking attempts via redirection using dynamic rules.
 
 ## Architecture and Workflow
 
