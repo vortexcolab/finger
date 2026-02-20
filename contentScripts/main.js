@@ -2,13 +2,13 @@
  *
  * @type {string} 
  */
-const extensionId = "ndpiieakkdnodgdnpbbnpdggkfliemeg";
+const extensionId = "dalfinncnmgblohdpgnphdadaibhmajc";
 
 /**
  *
  * @type {number} 
  */
-const logLevel = 1;
+const logLevel = 0;
 /**
  *
  * @type {object} 
@@ -21,7 +21,7 @@ const config = {};
 const fingerstatus = {};
 
 
-(logLevel <= 4) ? console.log("Entraste no main.js "): null;
+//(logLevel <= 4) ? console.log("Entraste no main.js "): null;
 
 
 /** 
@@ -71,7 +71,7 @@ function calculateStatus() {
         let methodName = parts[parts.length - 1];
 
         
-        (logLevel <= 1) ? console.log(target, methodName, item.registerType): null;
+        //(logLevel <= 1) ? console.log(target, methodName, item.registerType): null;
         if (item.registerType && item.type != "none" && target[methodName] == true) {
           cEntropy += item.entropy;
           if (item.category.length >= 0)
@@ -95,7 +95,7 @@ function calculateStatus() {
           let attributeName = parts[parts.length - 1];
 
           
-          (logLevel <= 1) ? console.log(target, attributeName, item.registerType): null;
+          //(logLevel <= 1) ? console.log(target, attributeName, item.registerType): null;
           if (item.registerType && item.type != "none" && target[attributeName] == true) {
             cEntropy += item.entropy;
             if (item.category.length >= 0)
@@ -109,13 +109,13 @@ function calculateStatus() {
   techniques.forEach((tech) => {
     let e = Math.max(...tech.traces.map(elem => elem.getEntropy()));
     
-    (logLevel <= 1) ? console.log("Technique, entropy: ", tech.name, e): null;
+    //(logLevel <= 1) ? console.log("Technique, entropy: ", tech.name, e): null;
     (e > 0) ? tag.push(tech.name) : null;
     cEntropy += e;
   });
 
  
-  (logLevel <= 1) ? console.log("Entropy: ", cEntropy): null;
+  //(logLevel <= 1) ? console.log("Entropy: ", cEntropy): null;
   return { entropy: cEntropy, tag: tag};
 
 }
@@ -254,7 +254,7 @@ function addToProxy({ category, registerType, name, attributes }, toggles)  {
   // Create a proxy handler for the style object
   const proxyHandler = {
     get(target, prop, receiver) {
-      (logLevel <= 1) ? console.log(`Accessing .${prop} and ${attributes}`): null;
+      //(logLevel <= 1) ? console.log(`Accessing .${prop} and ${attributes}`): null;
       if (attributes.includes(prop))
         (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name, prop);
       if (typeof target[prop] === 'function') {
@@ -264,7 +264,7 @@ function addToProxy({ category, registerType, name, attributes }, toggles)  {
 
     },
     set(target, prop, value) {
-      (logLevel <= 1) ? console.log(`Setting .${prop} to ${value} and ${attributes}`): null;
+      //(logLevel <= 1) ? console.log(`Setting .${prop} to ${value} and ${attributes}`): null;
       if (attributes.includes(prop))
         (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name, prop);
       return Reflect.set(target, prop, value);
@@ -317,7 +317,7 @@ function interceptMethod({ category, registerType, prototype, name, isConstructo
   if (prototype) {
       Object.defineProperty(target, methodName, {
           value: function (...args) {
-            (logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
+            //(logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
               (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
               return (blockFingerprinting) ? undefined : originalMethod.apply(this, args);
           },
@@ -327,7 +327,7 @@ function interceptMethod({ category, registerType, prototype, name, isConstructo
   } else {
       // If not prototype, redefine on the instance
       target[methodName] = function (...args) {
-        (logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
+        //(logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
           (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
           return (blockFingerprinting) ? undefined : (isConstructor) ? new originalMethod(...args): originalMethod.apply(this, args);
       };
@@ -372,7 +372,7 @@ function interceptAttribute({ category, registerType,  name }, toggles) {
       return;
   }
 
-  (logLevel <= 1) ? console.log(target, attributeName): null;
+  //(logLevel <= 1) ? console.log(target, attributeName): null;
 
   const hasDescriptor = typeof Object.getOwnPropertyDescriptor(target, attributeName) !== 'undefined';
   if (!hasDescriptor) {
@@ -382,12 +382,12 @@ function interceptAttribute({ category, registerType,  name }, toggles) {
   const originalValue = (hasDescriptor) ? Object.getOwnPropertyDescriptor(target, attributeName): target[attributeName];
   Object.defineProperty(target, attributeName, {
       get() {
-          (logLevel <= 1) ? console.log(`Intercepted attribute: ${name}`): null;
+          //(logLevel <= 1) ? console.log(`Intercepted attribute: ${name}`): null;
           (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
           return (blockFingerprinting) ? undefined : (originalValue.hasOwnProperty('get')) ? originalValue.get.call(this) : (typeof originalValue.value === 'function') ? originalValue.call(this) : originalValue;
       },
       set(value) {
-          (logLevel <= 1) ? console.log(`Modified attribute: ${name}, New value: ${value}`): null;
+          //(logLevel <= 1) ? console.log(`Modified attribute: ${name}, New value: ${value}`): null;
           (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
           if (originalValue.hasOwnProperty('set')) {
             originalValue.set.call(this, value);
@@ -410,7 +410,7 @@ function interceptAttribute({ category, registerType,  name }, toggles) {
  */
 async function applyConfig(config, toggles) {
 
-  console.log("Toggles from storage: ", toggles);
+  //console.log("Toggles from storage: ", toggles);
   
   // Process methodOverride
   if (config.methodOverride) {
@@ -429,7 +429,7 @@ async function applyConfig(config, toggles) {
   // Handle proxy (if needed later)
   if (config.proxy && config.proxy.length > 0) {
       for (const item of config.proxy) {
-        (logLevel <= 1) ? console.log("Proxy: ", item): null;
+        //(logLevel <= 1) ? //console.log("Proxy: ", item): null;
         addToProxy(item, toggles);
       }
   }

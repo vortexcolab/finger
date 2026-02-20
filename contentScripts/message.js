@@ -1,8 +1,6 @@
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-      console.log(sender.tab ?
-                  "from a content script:" + sender.tab.url :
-                  "from the extension");
+      //console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
       
       if (request.message === "Give me entropy") {
 
@@ -17,7 +15,7 @@ chrome.runtime.onMessage.addListener(
 
           // Listen for responses from the webpage
           channel.port1.onmessage = (event) => {
-              console.log("Entropy received from webpage:", event.data);
+              //console.log("Entropy received from webpage:", event.data);
 
               // Send the result back to the extension
               sendResponse({ success: true, data: event.data });
@@ -29,4 +27,4 @@ chrome.runtime.onMessage.addListener(
     }
   );
 
-  console.log("Entras-te no message.js");
+  //console.log("Entras-te no message.js");
