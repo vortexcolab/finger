@@ -9,12 +9,13 @@ function updateBarometer(entropy, tags) {
   const indicator = document.getElementById('indicator');
   const entropyLevel = document.getElementById('entropy-level');
   const tagIndicator = document.getElementById('tag');
+  let maxEntropy = 35; // Define a maximum entropy value for scaling
 
   // Ensure entropy is between 0 and 100
-  const clampedEntropy = Math.min(Math.max(entropy, 0), 50);
+  const clampedEntropy = Math.min(Math.max(entropy, 0), maxEntropy);
 
   // Add animation if entropy is above a threshold
-  if (clampedEntropy > 35) {
+  if (clampedEntropy > 30) {
       indicator.classList.add('animate');
   } else {
       indicator.classList.remove('animate');
@@ -36,17 +37,24 @@ function updateBarometer(entropy, tags) {
 
 
   // Update the width of the bar based on entropy
-  indicator.style.width = `${clampedEntropy*2}%`;
+  indicator.style.width = `${clampedEntropy*(100/maxEntropy)}%`;
 
 
   // Update the label
 
   tagIndicator.textContent = '';
   tags.forEach(tag => {
-    let tmpElem = document.createElement("span");
+    let tmpElem = (typeof document.createElement === 'function') ? document.createElement("span") : null;
+    if (!(tmpElem instanceof Node)) {
+      tmpElem = new DOMParser().parseFromString('<span></span>', 'text/html').body.firstChild;
+    }
     tmpElem.className = "technique-tag";
-    tmpElem.textContent = tag
-    tagIndicator.appendChild(tmpElem);
+    tmpElem.textContent = String(tag);
+    if (tagIndicator && typeof tagIndicator.appendChild === 'function') {
+      tagIndicator.appendChild(tmpElem);
+    } else {
+      console.warn('Cannot append tag element; tagIndicator missing or appendChild not a function', tagIndicator);
+    }
   });
 
 }
@@ -71,12 +79,11 @@ setInterval(() => {
   chrome.tabs.query({ active: true, currentWindow: true}, function (tabs) {
     let current = tabs[0];
     let url = current.url;
-    const hostname = new URL(url).hostname;
 
-    console.log(url);
+    //console.log(url);
     // Perform an action, such as sending a message to the content script
+    
     chrome.tabs.sendMessage(current.id, { message: "Give me entropy", url: url }, (response) => {
-      console.log("Response from content script:", response);
       displayMainPage();
       updateBarometer(Math.round(Math.log2(response.data.entropy)), response.data.tag);
 
@@ -84,9 +91,18 @@ setInterval(() => {
   });
 }, 700);
 
+function openInNewTab(url) {
+  const newTab = window.open(url, '_blank');
+  if (newTab) {
+    newTab.focus(); // Ensures the new tab gets focus
+  } else {
+    console.error('Popup blocked! Please allow popups for this website.');
+  }
+}
+
 // go to feedback template
 document.getElementById("feedbackBtn").onclick =  (event) => {
-  window.location.href = chrome.runtime.getURL("action/feedback.html");
+  openInNewTab("https://www.vortex-colab.com/success-stories/finger/");
 }
 
 document.querySelector('#go-to-options').addEventListener('click', function() {
