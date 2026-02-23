@@ -326,11 +326,40 @@ function interceptMethod({ category, registerType, prototype, name, isConstructo
       });
   } else {
       // If not prototype, redefine on the instance
-      target[methodName] = function (...args) {
+      const wrapper = function (...args) {
         //(logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
-          (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
-          return (blockFingerprinting) ? undefined : (isConstructor) ? new originalMethod(...args): originalMethod.apply(this, args);
+        (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
+        return (blockFingerprinting) ? undefined : (isConstructor) ? new originalMethod(...args) : originalMethod.apply(this, args);
       };
+
+      // If this wraps a constructor, preserve the original prototype so
+      // `Constructor.prototype` continues to point to the original prototype
+      // object (important for built-ins like Uint8Array).
+      if (isConstructor && originalMethod && originalMethod.prototype) {
+        try {
+          Object.defineProperty(wrapper, 'prototype', {
+            value: originalMethod.prototype,
+            writable: false,
+            configurable: true,
+            enumerable: false
+          });
+        } catch (e) {
+          // If environment prevents redefining prototype, fall back to assignment
+          try { wrapper.prototype = originalMethod.prototype; } catch (e) { /* ignore */ }
+        }
+      }
+
+      // Install the wrapper preserving writability/configurability
+      try {
+        Object.defineProperty(target, methodName, {
+          value: wrapper,
+          writable: true,
+          configurable: true
+        });
+      } catch (e) {
+        // Fallback if defineProperty fails
+        target[methodName] = wrapper;
+      }
   }
 }
 
