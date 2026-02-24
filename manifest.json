@@ -7,7 +7,7 @@
       "storage"
     ],
     "description": "This tool was developed by security experts after a deep research, it's ready to block the most trend and sofisticated trackers.",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "action": {
       "default_icon": "images/finger.png",
       "default_title": "Click me!"
