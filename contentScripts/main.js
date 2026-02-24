@@ -398,8 +398,15 @@ function interceptMethod({ category, registerType, prototype, name, isConstructo
           for (const key of staticKeys) {
             if (key === 'prototype') continue;
             try {
-              const desc = Object.getOwnPropertyDescriptor(originalMethod, key);
-              Object.defineProperty(wrapper, key, desc);
+              const desc = Object.getOwnPropertyDescriptor(originalMethod, key) || { enumerable: false };
+              // Use an accessor so the wrapper reflects changes to the original constructor (e.g., polyfills added later)
+              Object.defineProperty(wrapper, key, {
+                get() {
+                  try { return originalMethod[key]; } catch (e) { return undefined; }
+                },
+                configurable: true,
+                enumerable: !!desc.enumerable
+              });
             } catch (e) {
               // ignore individual property copy failures
             }
