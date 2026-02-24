@@ -20,6 +20,40 @@ const config = {};
  */
 const fingerstatus = {};
 
+// Inject a small page-context polyfill so page scripts can call Uint8Array.from
+;(function injectUint8ArrayFromPolyfill() {
+  try {
+    const script = document.createElement('script');
+    script.textContent = `(() => {
+      try {
+        if (typeof Uint8Array !== 'undefined' && typeof Uint8Array.from !== 'function') {
+          var ArrayFrom = (typeof Array.from === 'function') ? Array.from : function(arr, mapFn, thisArg) {
+            var out = [];
+            for (var i = 0; i < arr.length; i++) {
+              out.push(typeof mapFn === 'function' ? mapFn.call(thisArg, arr[i], i) : arr[i]);
+            }
+            return out;
+          };
+          Object.defineProperty(Uint8Array, 'from', {
+            value: function(source, mapFn, thisArg) {
+              return new Uint8Array(ArrayFrom(source, mapFn, thisArg));
+            },
+            writable: true,
+            configurable: true,
+            enumerable: false
+          });
+        }
+      } catch (e) {
+        // swallow errors to avoid breaking page
+      }
+    })();`;
+    (document.head || document.documentElement).appendChild(script);
+    script.parentNode.removeChild(script);
+  } catch (e) {
+    // ignore
+  }
+})();
+
 
 //(logLevel <= 4) ? console.log("Entraste no main.js "): null;
 
