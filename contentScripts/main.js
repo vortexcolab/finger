@@ -346,6 +346,7 @@ function interceptMethod({ category, registerType, prototype, name, isConstructo
   }
 
   const originalMethod = target[methodName];
+  const originalDescriptor = Object.getOwnPropertyDescriptor(target, methodName) || {};
 
   // If prototype, redefine on prototype
   if (prototype) {
@@ -361,9 +362,17 @@ function interceptMethod({ category, registerType, prototype, name, isConstructo
   } else {
       // If not prototype, redefine on the instance
       const wrapper = function (...args) {
-        //(logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
-        (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
-        return (blockFingerprinting) ? undefined : (isConstructor) ? new originalMethod(...args) : originalMethod.apply(this, args);
+        (blockFingerprinting) ? undefined : updateRegisteredInterceptions(registerType, name);
+        if (isConstructor) {
+          // Preserve subclassing/new.target behavior
+          try {
+            return Reflect.construct(originalMethod, args, new.target || originalMethod);
+          } catch (e) {
+            // Fallback to direct construction if Reflect.construct fails
+            return new originalMethod(...args);
+          }
+        }
+        return originalMethod.apply(this, args);
       };
 
       // If this wraps a constructor, preserve the original prototype so
@@ -382,17 +391,50 @@ function interceptMethod({ category, registerType, prototype, name, isConstructo
           try { wrapper.prototype = originalMethod.prototype; } catch (e) { /* ignore */ }
         }
       }
+      // Copy static properties (like Uint8Array.from) from the original constructor
+      if (isConstructor && originalMethod) {
+        try {
+          const staticKeys = Object.getOwnPropertyNames(originalMethod).concat(Object.getOwnPropertySymbols(originalMethod));
+          for (const key of staticKeys) {
+            if (key === 'prototype') continue;
+            try {
+              const desc = Object.getOwnPropertyDescriptor(originalMethod, key);
+              Object.defineProperty(wrapper, key, desc);
+            } catch (e) {
+              // ignore individual property copy failures
+            }
+          }
+        } catch (e) {
+          // ignore failures copying static properties
+        }
+      }
 
-      // Install the wrapper preserving writability/configurability
+      // If this is a global constructor (e.g., window.Uint8Array), define a getter
+      // so mere reads register presence. Otherwise, replace the value as before.
       try {
-        Object.defineProperty(target, methodName, {
-          value: wrapper,
-          writable: true,
-          configurable: true
-        });
+        if (isConstructor && (target === window || target === globalThis)) {
+          Object.defineProperty(target, methodName, {
+            get() {
+              (blockFingerprinting) ? undefined : updateRegisteredInterceptions(registerType, name);
+              return wrapper;
+            },
+            set(v) {
+              // allow user code to replace the constructor
+              try { Object.defineProperty(target, methodName, { value: v, writable: true, configurable: true }); } catch (e) { target[methodName] = v; }
+            },
+            configurable: typeof originalDescriptor.configurable === 'boolean' ? originalDescriptor.configurable : true,
+            enumerable: typeof originalDescriptor.enumerable === 'boolean' ? originalDescriptor.enumerable : false
+          });
+        } else {
+          Object.defineProperty(target, methodName, {
+            value: wrapper,
+            writable: true,
+            configurable: true
+          });
+        }
       } catch (e) {
         // Fallback if defineProperty fails
-        target[methodName] = wrapper;
+        try { target[methodName] = wrapper; } catch (ee) { /* ignore */ }
       }
   }
 }
