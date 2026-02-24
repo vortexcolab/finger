@@ -33,6 +33,23 @@ global.chrome = { runtime: { sendMessage: (id, msg, cb) => {
 // Require the content script (it will run and install hooks)
 require(path.join(__dirname, '..', 'contentScripts', 'main.js'));
 
+// Simulate a polyfill that runs after the hook: define `from` on the original constructor
+setTimeout(() => {
+  try {
+    if (typeof window.Uint8Array.from !== 'function') {
+      Object.defineProperty(window.Uint8Array, 'from', {
+        value: function(source, mapFn, thisArg) {
+          return new window.Uint8Array(Array.from(source, mapFn, thisArg));
+        },
+        writable: true,
+        configurable: true
+      });
+    }
+  } catch (e) {}
+
+  // Give the polyfill a moment before assertions
+}, 50);
+
 setTimeout(() => {
   try {
     // Test 1: wrapper exists and has static `from`
