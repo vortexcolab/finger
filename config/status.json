@@ -95,8 +95,6 @@
     },
     "HTMLElement": {
         "prototype": {
-            "appendChild": 0,
-            "removeChild": 0,
             "getBoundingClientRect": 0,
             "offsetWidth": 0,
             "offsetHeight": 0,
@@ -114,15 +112,21 @@
     },
     "Node": {
         "prototype": {
-            "textContent": 0
+            "textContent": 0,
+            "appendChild": 0,
+            "removeChild": 0
         }
     },
-    "document": {
-        "timeline": {
+    "AnimationTimeline": {
+        "prototype": {
             "currentTime": 0
-        },
-        "getElementsByTagName": false,
-        "createElement": false
+        }
+    },
+    "Document": {
+        "prototype": {
+            "getElementsByTagName": false,
+            "createElement": false
+        }
     },
     "BaseAudioContext": {
         "prototype": {

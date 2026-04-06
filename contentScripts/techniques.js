@@ -13,8 +13,8 @@ const techniques = [
                 arr = [],
                 parts,
                 methodName,
-                items = ["HTMLElement.prototype.appendChild",
-                    "HTMLElement.prototype.removeChild",
+                items = ["Node.prototype.appendChild",
+                    "Node.prototype.removeChild",
                     "Element.prototype.innerHTML",
                     "HTMLElement.prototype.offsetWidth", 
                     "HTMLElement.prototype.offsetHeight", 
@@ -38,13 +38,13 @@ const techniques = [
                 parts,
                 methodName,
                 items = [
-                    "HTMLElement.prototype.getBoundingClientRect", 
+                    "Element.prototype.getBoundingClientRect", 
                     "HTMLElement.prototype.offsetWidth", 
                     "HTMLElement.prototype.offsetHeight", 
                     "HTMLElement.prototype.style.fontFamily"],
                 items2 = [
-                    "HTMLElement.prototype.appendChild", 
-                    "HTMLElement.prototype.removeChild", 
+                    "Node.prototype.appendChild", 
+                    "Node.prototype.removeChild", 
                     "Element.prototype.innerHTML", 
                     "HTMLElement.prototype.style.position", 
                     "HTMLElement.prototype.style.top", 
@@ -158,7 +158,7 @@ const techniques = [
                   items = [
                       "window.requestAnimationFrame"],
                   items2 = [
-                      "document.timeline.currentTime"
+                      "AnimationTimeline.prototype.currentTime"
                   ];
                   items.map((name, index) => {
                       parts = name.split("."), methodName = parts[parts.length - 1], arr.push(resolvePath(parts.slice(0,-1).join("."), fingerstatus)[methodName]);
