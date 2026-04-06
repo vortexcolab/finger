@@ -455,7 +455,7 @@ function interceptAttribute({ category, registerType,  name }, toggles) {
   const hasDescriptor = typeof Object.getOwnPropertyDescriptor(target, attributeName) !== 'undefined';
   if (!hasDescriptor) {
     console.warn(`This ${target} hasn't property descriptor for ${attributeName}`);
-  }
+   }
   // Modify attribute with getter/setter
   const originalValue = (hasDescriptor) ? Object.getOwnPropertyDescriptor(target, attributeName): target[attributeName];
   Object.defineProperty(target, attributeName, {
