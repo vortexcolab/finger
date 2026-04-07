@@ -7,7 +7,7 @@
       "storage"
     ],
     "description": "This tool was developed by security experts after a deep research, it's ready to block the most trend and sofisticated trackers.",
-    "version": "1.2.4",
+    "version": "1.2.5",
     "action": {
       "default_icon": "images/finger.png",
       "default_title": "Click me!"
@@ -31,14 +31,14 @@
       {
         "matches": ["<all_urls>"],
         "js": ["contentScripts/message.js"],
-        "run_at": "document_start",
+        "run_at": "document_idle",
         "all_frames": true
       },
       {
         "matches": ["<all_urls>"],
         "js": ["contentScripts/techniques.js"],
         "world": "MAIN",
-        "run_at": "document_start",
+        "run_at": "document_idle",
         "all_frames": true
       }
     ],

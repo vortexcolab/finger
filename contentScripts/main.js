@@ -250,24 +250,45 @@ function addToProxy({ category, registerType, name, attributes }, toggles)  {
 
   // Save the original method descriptor
   const originalDescriptor = Object.getOwnPropertyDescriptor(target, property);
+  
 
   // Create a proxy handler for the style object
   const proxyHandler = {
     get(target, prop, receiver) {
-      //(logLevel <= 1) ? console.log(`Accessing .${prop} and ${attributes}`): null;
-      if (attributes.includes(prop))
-        (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name, prop);
-      if (typeof target[prop] === 'function') {
-        return (blockFingerprinting) ?  undefined : target[prop].bind(target); // Ensure proper `this` context
-      }
-      return (blockFingerprinting) ?  undefined : Reflect.get(target, prop, receiver);
+      console.log(`Accessing .${String(prop)} and ${attributes}`);
+      const value = Reflect.get(target, prop, target);
 
+      if (attributes.includes(prop)) {
+        if (blockFingerprinting) return undefined;
+        updateRegisteredInterceptions(registerType, name, prop);
+      }
+
+      if (value instanceof Function) {
+        return function (...args) {
+          return value.apply(this === receiver ? target : this, args);
+        };
+      }
+
+      return value;
     },
     set(target, prop, value) {
       //(logLevel <= 1) ? console.log(`Setting .${prop} to ${value} and ${attributes}`): null;
-      if (attributes.includes(prop))
-        (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name, prop);
-      return Reflect.set(target, prop, value);
+      if (attributes.includes(prop)) {
+        if (!blockFingerprinting) updateRegisteredInterceptions(registerType, name, prop);
+      }
+      return Reflect.set(target, prop, value, target);
+    },
+    getPrototypeOf(target) {
+      return Reflect.getPrototypeOf(target);
+    },
+    has(target, prop) {
+      return Reflect.has(target, prop);
+    },
+    ownKeys(target) {
+      return Reflect.ownKeys(target);
+    },
+    getOwnPropertyDescriptor(target, prop) {
+      return Reflect.getOwnPropertyDescriptor(target, prop);
     }
   };
 
@@ -507,7 +528,7 @@ async function applyConfig(config, toggles) {
   // Handle proxy (if needed later)
   if (config.proxy && config.proxy.length > 0) {
       for (const item of config.proxy) {
-        //(logLevel <= 1) ? //console.log("Proxy: ", item): null;
+        console.log("Proxy: ", item);
         addToProxy(item, toggles);
       }
   }
