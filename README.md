@@ -66,3 +66,4 @@ FINGER is a web extension conceived for Google Chrome that's monitor user privac
 ## License
 
 This project is licensed under the MIT License.
+
