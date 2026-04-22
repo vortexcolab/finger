@@ -21,7 +21,7 @@ const config = {};
 const fingerstatus = {};
 
 
-//(logLevel <= 4) ? console.log("Entraste no main.js "): null;
+(logLevel >= 1) ? console.log("Entraste no main.js "): null;
 
 
 /** 
@@ -71,11 +71,15 @@ function calculateStatus() {
         let methodName = parts[parts.length - 1];
 
         
-        //(logLevel <= 1) ? console.log(target, methodName, item.registerType): null;
+        (logLevel >= 1) ? console.log(target, methodName, item.registerType): null;
         if (item.registerType && item.type != "none" && target[methodName] == true) {
-          cEntropy += item.entropy;
-          if (item.category.length >= 0)
+          (logLevel >= 1) ? console.log("Adding entropy for attributeModification: ", item.name, item.category, item.entropy, cEntropy): null;
+          if (item.category.some(cat => !tag.includes(cat))) {
+            (logLevel >= 1) ? console.log("Tag: ", tag, "Category: ", item.category): null;
             tag = [...new Set([...tag, ...item.category])];
+            (logLevel >= 1) ? console.log("Updated tag: ", tag, "Updated entropy: ", cEntropy): null;
+          }
+          cEntropy > 0 ? cEntropy *= item.entropy: cEntropy += item.entropy;
         }
       }
     }
@@ -95,11 +99,17 @@ function calculateStatus() {
           let attributeName = parts[parts.length - 1];
 
           
-          //(logLevel <= 1) ? console.log(target, attributeName, item.registerType): null;
+          (logLevel >= 1) ? console.log(target, attributeName, item.registerType): null;
+          if (attributeName == "innerHeight")
+            (logLevel >= 1) ? console.log(target[attributeName], attributeName, item.registerType, item.type, item.entropy, cEntropy): null;
           if (item.registerType && item.type != "none" && target[attributeName] == true) {
-            cEntropy += item.entropy;
-            if (item.category.length >= 0)
+            (logLevel >= 1) ? console.log("Adding entropy for attributeModification: ", item.name, item.category, item.entropy, cEntropy): null;
+            if (item.category.some(cat => !tag.includes(cat))) {
+              (logLevel >= 1) ? console.log("Tag: ", tag, "Category: ", item.category): null;
               tag = [...new Set([...tag, ...item.category])];
+              (logLevel >= 1) ? console.log("Updated tag: ", tag, "Updated entropy: ", cEntropy): null;
+            }
+            cEntropy > 0 ? cEntropy *= item.entropy: cEntropy += item.entropy;
           }
         }
       }
@@ -109,13 +119,16 @@ function calculateStatus() {
   techniques.forEach((tech) => {
     let e = Math.max(...tech.traces.map(elem => elem.getEntropy()));
     
-    //(logLevel <= 1) ? console.log("Technique, entropy: ", tech.name, e): null;
+    (logLevel >= 1) ? console.log("Technique, entropy: ", tech.name, e,  Math.log2(e)) : null;
+
     (e > 0) ? tag.push(tech.name) : null;
-    cEntropy += e;
+    (e > 0) ? cEntropy > 0 ? cEntropy *= e: cEntropy += e: null;
+
+    (logLevel >= 1) ? console.log("Updated tag: ", tag, "Updated entropy: ", cEntropy): null;
   });
 
  
-  //(logLevel <= 1) ? console.log("Entropy: ", cEntropy): null;
+  (logLevel >= 1) ? console.log("Entropy: ", cEntropy): null;
   return { entropy: cEntropy, tag: tag};
 
 }
@@ -255,7 +268,7 @@ function addToProxy({ category, registerType, name, attributes }, toggles)  {
   // Create a proxy handler for the style object
   const proxyHandler = {
     get(target, prop, receiver) {
-      console.log(`Accessing .${String(prop)} and ${attributes}`);
+      // console.log(`Accessing .${String(prop)} and ${attributes}`);
       const value = Reflect.get(target, prop, target);
 
       if (attributes.includes(prop)) {
@@ -272,7 +285,7 @@ function addToProxy({ category, registerType, name, attributes }, toggles)  {
       return value;
     },
     set(target, prop, value) {
-      //(logLevel <= 1) ? console.log(`Setting .${prop} to ${value} and ${attributes}`): null;
+      (logLevel >= 1) ? console.log(`Setting .${prop} to ${value} and ${attributes}`): null;
       if (attributes.includes(prop)) {
         if (!blockFingerprinting) updateRegisteredInterceptions(registerType, name, prop);
       }
@@ -339,7 +352,7 @@ function interceptMethod({ category, registerType, prototype, name, isConstructo
   if (prototype) {
       Object.defineProperty(target, methodName, {
           value: function (...args) {
-            //(logLevel <= 1) ? console.log(`Intercepted method: ${name}`): null;
+            (logLevel >= 2) ? console.log(`Intercepted method: ${name}`): null;
               (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
               return (blockFingerprinting) ? undefined : originalMethod.apply(this, args);
           },
@@ -471,7 +484,7 @@ function interceptAttribute({ category, registerType,  name }, toggles) {
       return;
   }
 
-  //(logLevel <= 1) ? console.log(target, attributeName): null;
+  (logLevel >= 3) ? console.log(target, attributeName): null;
 
   const hasDescriptor = typeof Object.getOwnPropertyDescriptor(target, attributeName) !== 'undefined';
   if (!hasDescriptor) {
@@ -481,12 +494,12 @@ function interceptAttribute({ category, registerType,  name }, toggles) {
   const originalValue = (hasDescriptor) ? Object.getOwnPropertyDescriptor(target, attributeName): target[attributeName];
   Object.defineProperty(target, attributeName, {
       get() {
-          //(logLevel <= 1) ? console.log(`Intercepted attribute: ${name}`): null;
+          (logLevel >= 4) ? console.log(`Intercepted attribute: ${name}`): null;
           (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
           return (blockFingerprinting) ? undefined : (originalValue.hasOwnProperty('get')) ? originalValue.get.call(this) : (typeof originalValue.value === 'function') ? originalValue.call(this) : originalValue;
       },
       set(value) {
-          //(logLevel <= 1) ? console.log(`Modified attribute: ${name}, New value: ${value}`): null;
+          (logLevel >= 4) ? console.log(`Modified attribute: ${name}, New value: ${value}`): null;
           (blockFingerprinting) ?  undefined : updateRegisteredInterceptions(registerType, name);
           if (originalValue.hasOwnProperty('set')) {
             originalValue.set.call(this, value);
@@ -528,7 +541,6 @@ async function applyConfig(config, toggles) {
   // Handle proxy (if needed later)
   if (config.proxy && config.proxy.length > 0) {
       for (const item of config.proxy) {
-        console.log("Proxy: ", item);
         addToProxy(item, toggles);
       }
   }

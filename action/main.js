@@ -68,10 +68,7 @@ function displayMainPage() {
 
 }
 
-setInterval(() => {
-
-
-  // Example: Simulate updates every second
+function getEntropy() {
   let currentEntropy = 0;
   /* 
     O problema com esta implementação é que as janelas vão espelhar os dados da janela ativa e last Focused
@@ -80,16 +77,29 @@ setInterval(() => {
     let current = tabs[0];
     let url = current.url;
 
-    //console.log(url);
     // Perform an action, such as sending a message to the content script
     
     chrome.tabs.sendMessage(current.id, { message: "Give me entropy", url: url }, (response) => {
       displayMainPage();
-      updateBarometer(Math.round(Math.log2(response.data.entropy)), response.data.tag);
-
+      if (response && response.success) {
+        // console.log("Entropy received from content script:", response.data);
+        updateBarometer(Math.round(Math.log2(response.data.entropy)), response.data.tag);
+      } else {
+        // console.log("Failed to receive entropy from content script.");
+        updateBarometer(0, []);
+      }
     });
   });
-}, 700);
+}
+
+getEntropy();
+
+setInterval(() => {
+
+  getEntropy();
+
+ 
+}, 1000);
 
 function openInNewTab(url) {
   const newTab = window.open(url, '_blank');
@@ -102,7 +112,7 @@ function openInNewTab(url) {
 
 // go to feedback template
 document.getElementById("feedbackBtn").onclick =  (event) => {
-  openInNewTab("https://www.vortex-colab.com/success-stories/finger/");
+  openInNewTab("https://github.com/vortexcolab/finger/issues");
 }
 
 document.querySelector('#go-to-options').addEventListener('click', function() {
